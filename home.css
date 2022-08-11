@@ -1,0 +1,204 @@
+.di{
+     width: 99.7%;
+     height: 920px;
+     border: 2px solid;
+     position: absolute;
+     bottom: 0px;
+     background-color: #ccc;
+     text-align: right;
+     top: 0px;
+     left: 0px;
+     right: 0px;
+}
+
+ img {
+    width: 300px;
+    height: 200px;
+    border-radius: 12%;
+}
+
+nav {
+     clear: both;
+     color: rgb(255, 255, 255);
+     background-color: #030020;
+     height: 40px;
+}
+
+nav ul {
+     margin: 0px;
+     padding: 5px 0px 5px 30px;
+}
+
+nav li {
+     font-family: myfont;
+     display: inline;
+     margin-right: 40px;
+}
+
+nav li a {
+     color: antiquewhite;
+     font-weight: bold;
+     text-decoration: none;
+}
+
+nav li a:hover {
+   color: red;
+}
+
+.r4e{
+background-color: #030020;
+position: absolute;
+width: 100%;
+right: 0px;
+bottom: -57px;
+height: 31px;
+text-align: center;
+color: #fff;
+}
+
+.p2{
+     position: absolute;
+     width: 100%;
+     color: #030020;
+     text-align: center;
+
+}
+
+.p11 {
+     font-family: myfont;
+     border-radius: 12%;
+     position: absolute;
+     box-shadow: 3px 3px 3px rgb(145, 144, 144);
+     width: 300px;
+     height: 250px;
+     top: 10px;
+     right: -230px;
+     border-style: double;
+     color: #000000;
+ }
+
+.p12 {
+     font-family: myfont;
+     border-radius: 10%;
+     position: absolute;
+     box-shadow: 3px 3px 3px rgb(145, 144, 144);
+     width: 300px;
+     height: 250px;
+     top: 10px;right: 80px;
+     border-style: outset;
+     color: #000000;
+ }
+
+ .p13 {
+     font-family: myfont;
+     border-radius: 12%;
+     position: absolute;
+     box-shadow: 3px 3px 3px rgb(145, 144, 144);
+     width: 300px;
+     height: 250px;
+     top: 10px;
+     right: 390px;
+     border-style: groove;
+     color: #000000;
+ }
+
+.p14 {
+     font-family: myfont;
+     border-radius: 10%;
+     position: absolute;
+     box-shadow: 3px 3px 3px rgb(145, 144, 144);
+     width: 300px;
+     height: 250px;
+     top: 10px;right: 710px;
+     border-style: outset;
+     color: #000000;
+ }
+
+ .p15 {
+     font-family: myfont;
+     border-radius: 12%;
+     position: absolute;
+     box-shadow: 3px 3px 3px rgb(145, 144, 144);
+     width: 300px;
+     height: 250px;
+     top: 280px;
+     right: -230px;
+     border-style: double;
+     color: #000000;
+ }
+
+.p16 {
+     font-family: myfont;
+     border-radius: 10%;
+     position: absolute;
+     box-shadow: 3px 3px 3px rgb(145, 144, 144);
+     width: 300px;
+     height: 250px;
+     top: 280px;right: 80px;
+     border-style: outset;
+     color: #000000;
+ }
+
+ .p17 {
+     font-family: myfont;
+     border-radius: 12%;
+     position: absolute;
+     box-shadow: 3px 3px 3px rgb(145, 144, 144);
+     width: 300px;
+     height: 250px;
+     top: 280px;
+     right: 390px;
+     border-style: groove;
+     color: #000000;
+ }
+
+.p18 {
+     font-family: myfont;
+     border-radius: 10%;
+     position: absolute;
+     box-shadow: 3px 3px 3px rgb(145, 144, 144);
+     width: 300px;
+     height: 250px;
+     top: 280px;right: 710px;
+     border-style: outset;
+     color: #000000;
+ }
+
+ .p19 {
+     font-family: myfont;
+     border-radius: 12%;
+     position: absolute;
+     box-shadow: 3px 3px 3px rgb(145, 144, 144);
+     width: 300px;
+     height: 250px;
+     top: 550px;
+     right: -100px;
+     border-style: groove;
+     color: #000000;
+ }
+
+.p20 {
+     font-family: myfont;
+     border-radius: 10%;
+     position: absolute;
+     box-shadow: 3px 3px 3px rgb(145, 144, 144);
+     width: 300px;
+     height: 250px;
+     top:550px;
+     right: 230px;
+     border-style: outset;
+     color: #000000;
+ }
+
+ .p21 {
+     font-family: myfont;
+     border-radius: 10%;
+     position: absolute;
+     box-shadow: 3px 3px 3px rgb(145, 144, 144);
+     width: 300px;
+     height: 250px;
+     top: 550px;
+     right: 550px;
+     border-style: outset;
+     color: #000000;
+ }

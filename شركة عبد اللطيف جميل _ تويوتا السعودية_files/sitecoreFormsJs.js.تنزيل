@@ -1,0 +1,102 @@
+﻿
+
+
+$(document).ready(function () {
+
+    //sitecore forms init
+    if ($(".selectSitecorecombobox").length > 0) {
+        $(".selectSitecorecombobox").combobox({
+            classes: {
+                "ui-selectmenu-menu": "highlight"
+            }
+            //},
+            //select: function (event, ui) {
+            //    var val, el = $('.selectSitecorecombobox');
+            //    val = el.val();
+            //    el.trigger('input');
+            //}
+        });
+        $(".custom-combobox-input").on("click", function () {
+            var e = jQuery.Event("keydown", { keyCode: 20 });
+          
+                $(this).trigger( e );
+        });
+    }
+})
+
+if ($(".formDateSitecore").length > 0) {
+    var orientation="bottom auto";
+    if ($(".rtl").length > 0) {
+        orientation="bottom right"
+    }
+    $('.formDateSitecore').datepicker({
+        viewMode: "months",
+        autoclose: true,
+        readonly: true,
+        disableTouchKeyboard: true,
+        todayHighlight: true,
+        orientation: orientation,
+        format: 'dd-mm-yyyy'
+    }).on('show', function (e) {
+        $(this).closest('.datepicker-field').addClass('datepicker-open');
+    }).on('hide', function (e) {
+        $(this).closest('.datepicker-field').removeClass('datepicker-open');
+    });
+}
+
+if ($(".sitecore-form-container:has(:radio)")) {
+    $(".sitecore-form-container input[type='radio']").parent("label").addClass("radioLabel col-lg-3 col-12");
+    $.each($(".sitecore-form-container input[type='radio']"), function (el, value) {
+        var labelText = $(this).parent("label").text();
+        var spanLabel = $(this).parent("label").append("<span>" + labelText + "</span>");
+    });
+}
+if ($(".multiSelectChceckBoxSitecore:has(:checkbox)")) {
+    $(".multiSelectChceckBoxSitecore input[type='checkbox']").parent("label").addClass("checkBoxLabel col-lg-3 col-12");
+    $.each($(".sitecore-form-container .multiSelectChceckBoxSitecore input[type='checkbox']"), function (el, value) {
+        var labelText = $(this).parent("label").text();
+        var spanLabel = $(this).parent("label").append("<span>" + labelText + "</span>");
+    });
+}
+if ($(".checkBoxSitecoreContainer:has(:checkbox)")) {
+
+    $(".checkBoxSitecoreContainer input[type='checkbox']").parent("label").addClass("checkBoxLabel");
+    $.each($(".checkBoxSitecoreContainer input[type='checkbox']"), function (el, value) {
+        var labelText = $(this).parent("label").text();
+        //$(this).parent("label").text("");
+        $(this).parent("label").html($(this).parent("label").find('input'));
+        var spanLabel = $(this).parent("label").after('<label class="form-check-label">' + labelText + '</label>');
+        // $(this).parent("label").next('.form-check-label').addBack().wrapAll('<div class="checkBoxContainer"/>');
+        //$(this).parent("label").wrap("<div></div>");
+
+    });
+    $(".checkBoxSitecoreContainer input[type='checkbox']").click(function () {
+        if ($(this).is(':checked')) {
+            $(this).parent("label").next(".form-check-label").addClass("checkActive");
+        }
+        else {
+            $(this).parent("label").next(".form-check-label").removeClass("checkActive");
+        }
+    });
+    $(".checkBoxSitecoreContainer input[type='checkbox']").click(function () {
+        if ($(this).is(':checked')) {
+            $(this).parent("label").next(".form-check-label").addClass("checkActive");
+        }
+        else {
+            $(this).parent("label").next(".form-check-label").removeClass("checkActive");
+        }
+    });
+    if ($(".sitecoreSubmitButton").length > 0) {
+        $(".sitecoreSubmitButton").wrap('<div class="submitContainer"></div>')
+    }
+
+}
+
+$(window).on('load', function () {
+
+});
+
+
+
+
+

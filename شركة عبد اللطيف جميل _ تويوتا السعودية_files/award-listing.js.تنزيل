@@ -1,0 +1,91 @@
+﻿var al = al || {};
+al.API = function () {
+    this.awardContainer = $('#AwardContainer'),
+        this.awardTemplate = $('#AwardTemplate'),
+        this.featuredArticleTemplate = $('#featuredArticleTemplate'),
+        this.loadMoreButtonContainer = $('#loadMorebtnContainer'),
+        this.loadMorebtn = $('#loadMorebtn'),
+        this.pageNo = $('#pageNumber').val(),
+        this.NextLoad = $('#nextLoad').val(),
+        this.loadCount = this.loadMorebtn.data('pagesize'),
+        this.awards = [],
+        this.getAwardListing = function () {
+        var that = this;
+        $(".tt-awards .btn.btn-primary").hide();
+        $(".tt-awards").addClass("loading");
+        
+            $.ajax({
+                url: '/api/GetAwardListing?pageNumber=' + that.pageNo + '&pageSize=' + Number(that.loadCount) + '&culture=' + $('html').attr('lang') + '&dataSourceId=' + $('#awardSourceId').val(),
+                method: "GET",
+                success: function (response) {
+                    if (response && response.Success) {
+                        that.awardContainer.show();
+
+                        if (response.Awards != null) {
+                            //that.awardContainer.html('');
+                            var template = that.awardTemplate.html();
+                            var templateOutput = Mustache.to_html(template, response.Awards);
+                            that.awardContainer.append(templateOutput);
+
+                        }
+                        else {
+                            that.awardContainer.html('');
+                            that.awardContainer.hide();
+                        }
+                        if (response.hasNextPage) {
+
+
+                        }
+                        else {
+                            that.loadMoreButtonContainer.hide();
+                        }
+
+                        if (response.Awards.length > 0) {
+                            for (var i = 0; i < response.Awards.length; i++) {
+                                that.awards.push(response.Awards[i]);
+                            }
+                            that.pageNo = that.awards.length;
+                            that.loadCount = Number(that.NextLoad);
+                        }
+
+                    }
+                    else {
+                        that.noResultFound();
+                    }
+                    $(".tt-awards").removeClass("loading");
+                    $(".tt-awards .btn.btn-primary").show();
+                },
+                error: function () {
+                    console.log("error in content hub listing js");
+                    console.log(url);
+                }
+            });
+        },
+        this.noResultFound = function () {
+
+            this.awardContainer.hide();
+        },
+        this.loadMoreClickEvent = function () {
+            var that = this;
+            $(document).on('click', '#loadMorebtn', function () {
+                that.getAwardListing();
+            });
+        },
+        this.init = function () {
+            this.getAwardListing();
+
+        }
+
+    return this;
+}
+
+var d = new al.API();
+
+$(document).ready(function () {
+    if ($("#awardListingComponent").length > 0) {
+        d.init();
+    }
+    $("#loadMorebtn").click(function () {
+        d.init();
+    });
+});

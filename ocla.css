@@ -1,0 +1,128 @@
+@font-face {
+    font-family: myfont;
+    src: url('Cairo/static/Cairo-Medium.ttf');
+
+}
+
+body{
+  margin: 0px;  
+}
+
+.p1 {
+    width: 100%;
+    /* position: absolute; */
+    bottom: 0px;
+    background-color: #ccc;
+    text-align: right;
+    /* top: 0px;
+    left: 0px;
+    right: 0px; */
+    height: 564px;
+}
+
+nav {
+    font-family: myfont;
+    clear: both;
+    color: aliceblue;
+    background-color: #030020;
+    height: 60px;
+    padding-top: 35px;
+}
+
+nav ul {
+    margin: 0px;
+    padding: 5px 0px 5px 3px;
+    position: absolute;
+    right: 200px;
+}
+
+nav li {
+
+    display: inline;
+    margin-right: 40px;
+
+}
+
+nav li a {
+    color: antiquewhite;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+nav li a:hover {
+  color: red;
+}
+
+@import url(https://fonts.googleapis.com/earlyaccess/droidarabicnaskh.css);
+
+
+footer{
+    font-family: myfont;
+    background-color: #030020;
+    /* position: absolute; */
+    width: 100%;
+    /* right: 0px; */
+    /* bottom: -45px; */
+    height: 37px;
+    text-shadow:3px 3px 3px #fff200;
+    text-align: center;
+    color: rgb(255, 255, 255);
+    font-size: 20px;
+    padding-top:4px;
+    padding-bottom:4px;
+    }
+
+
+
+#t5 {
+    background-color: #f1f1f1;
+    float: left;
+    width: 350px;
+    height: 400px;
+    position: absolute;
+    font-family: "myfont";
+    top: 120px;
+    left: 15px;
+    border-radius: 10px;
+    box-shadow: 2px 2px 2px rgb(76, 70, 70);
+    text-align: center;
+    padding: 10px;
+    
+}
+
+.p4 {
+    width: 120px;
+    height: 100px;
+    position: absolute;
+    right: -100px;
+    top: -40px;
+}
+
+#t4 {
+    background-color: #f1f1f1;
+    float: right;
+    width: 350px;
+    height: 400px;
+    position: absolute;
+    font-family: "myfont";
+    top: 120px;
+    right: 15px;
+    border-radius: 10px;
+    box-shadow: 2px 2px 2px rgb(76, 70, 70);
+    text-align: center;
+    padding: 10px;
+    
+}
+
+p{
+    font-family: myfont;
+    text-align: justify;
+}
+
+.t6{
+    position: absolute;
+    right: 410px;
+    top: 30px;
+}
+
+

@@ -1,0 +1,50 @@
+ <img src="images/26.jpg"  name="imageSlideShow" class="p5"> 
+
+
+
+
+
+
+
+
+
+
+
+
+
+.p5 {
+    width: 800px;
+    height: 450px;
+    margin-right: 25px;
+    border: 5px solid rgb(52, 89, 157);
+}
+
+
+
+
+
+
+
+var images=[
+    
+    "images/26.jpg",
+    "images/23.jpg",
+    "images/24.jpg",
+    "images/32.jpg",
+    "images/31.jpg",
+    "images/24.jpg"
+
+];
+    var index=0
+    
+    function changeImages(){
+        // imageslideshow.src="images/5.png";
+       document.imageSlideShow.src=images[index];
+       index ++;
+       if(index >= images.length){
+        index =0;
+       }
+       setTimeout("changeImages()",2000);
+    }
+    
+    changeImages();

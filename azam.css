@@ -1,0 +1,96 @@
+* {
+    margin: 0px;
+    padding: 0px;
+    box-sizing: border-box;
+}
+
+.bg-img {
+    background-image: url(7-33.jpg);
+    height: 100vh;
+    background-size: cover;
+    background-position: center;
+}
+
+.bg-img:after {
+    position: absolute;
+    content: '';
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(17, 30, 105, 0.7);
+}
+
+.content{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    text-align: center;
+    width: 370px;   
+    z-index: 999;
+    padding: 60px 32px;
+    background: rgba(255, 255, 255, 0.4);
+    box-shadow: -1px 4px 28px 0px rgba(73, 125, 228, 0.8);
+}
+
+.content header{
+    color: white;
+    font-size: 33px;
+    font-weight: 600;
+    margin: 0 0 35px 0;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.field{
+    position: relative;
+    height: 45px;
+    width: 100%;
+    display: flex;
+    background: rgba(255, 255, 255, 0.94);
+}
+
+.field input{
+    height: 100%;
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #222;
+font-size: 16px;
+font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif    ;
+}
+
+.span{
+    margin-top: 16px;
+}
+
+.pass{
+    text-align: left;
+    margin: 10px 0;
+}
+
+.pass a{
+color: white;
+font-family: 'Times New Roman', Times, serif;
+text-decoration: none; 
+}
+
+.pass:hover a{
+    text-decoration: underline;
+}
+
+input[type="submit"]{
+    background: #3498db;
+    border: 1px solid #2691d9;
+    color: white;
+    font-size: 18px;
+    letter-spacing: 1px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+input[type="submit"]:hover{
+    background: #2691d9;
+}

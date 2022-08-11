@@ -1,0 +1,2147 @@
+﻿
+(function (window, document, $, undefined) {
+
+    function setMobileHeights() {
+        if (app.windowWidth <= 767) {
+            var vh = $(window).height();
+            $('.tt-forms .swiper-container').height(vh - 174)
+        }
+    }
+
+    var toyotaforms = {
+        culture: $("html").attr("lang"),
+        initBookTestDrive: function () {
+
+            if (!$('.tt-forms').length)
+                return false;
+
+            if ($('.no-footer').length && app.isMobile) {
+                $('footer').hide();
+            }
+
+            if (navigator.userAgent.match(/(iPod|iPhone|iPad)/)) {
+                $('.tt-forms .tt-form-input :input').on('focus', function () {
+                    $(':input').not(this).attr("readonly", "readonly");
+                });
+
+                $('.tt-forms .tt-form-input :input').on('blur', function () {
+                    $(':input').removeAttr("readonly");
+                });
+            }
+
+            setMobileHeights();
+            // Initialize Swiper for form
+            var swiper = new Swiper('.tt-forms .swiper-container', {
+                direction: 'vertical',
+                mousewheel: true,
+                spaceBetween: 30,
+                centeredSlides: true,
+                slidesPerView: 'auto',
+                autoHeight: true,
+                preventIntercationOnTransition: true,
+                allowTouchMove: false,
+                preventClicks: false,
+                allowSlidePrev: false,
+                allowSlideNext: false,
+                navigation: {
+                    nextEl: '.swiper-button-next',
+                    prevEl: '.swiper-button-prev',
+                },
+                keyboard: {
+                    enabled: true,
+                    onlyInViewport: false,
+                },
+                breakpoints: {
+                    767: {
+                        slidesPerView: 1,
+                        spaceBetween: 0,
+                        mousewheel: false,
+                        allowTouchMove: false,
+                    }
+                }
+            });
+            $(".scroll-to-continue-btn").click(function () {
+                swiper.slideNext();
+            });
+
+            var $percent = $('.custom-pagination');
+            var $progressBar = $('.form-progress-bar');
+            var currentSlide;
+            var form = $('#testdriveform');
+            var errorLength = 0;
+            var errorState = false;
+            var slidesWIthErrors = [];
+            var i = 0;
+            var swiperLen = swiper.slides ? swiper.slides.length : 0;
+            var positionX = 0, positionY = 0;
+            var cfbFIx = false;
+            var hasAllValid = false;
+            var requiredFormGroups = [];
+            var moveTo = 0;
+            var textFIelds = $('.tt-forms .tt-form-input input.form-control');
+            var isDesktop = !app.isMobile;
+            var $lastBtn = $('.tt-forms .swiper-slide.last-slide .text-field-controls .btn-primary');
+            var submitFinal = false;
+            var noErrorsFirstTime = true;
+
+            var $textAreaFields = $('.tt-form-input textarea.auto-expanded');
+
+            $textAreaFields.each(function () {
+                $(this).closest('.tt-form-input').addClass('slide-textarea');
+            });
+
+
+            $(document).on('click', '.custom-combobox-input', function () {
+                $(this).next('.custom-combobox-toggle').trigger('click');
+            });
+
+            form.validator({
+                focus: false,
+                disable: false,
+            }).on('submit', function (e) {
+
+                if (e.isDefaultPrevented()) {
+
+                    toggleSwipperMovement(true);
+                    if (isDesktop) {
+                        if ($('.controls-footer-box:visible').length) {
+                            $('.controls-footer-box, .controls-box-spacer').slideUp();
+                        }
+                    } else {
+                        if ($('.controls-footer-box:visible').length) {
+
+                            $('.tt-forms').removeClass('review-bar-mobile');
+                            setTimeout(function () {
+                                $('.tt-forms .controls-footer-box').css('opacity', 0);
+                            }, 200);
+
+                        }
+
+                    }
+
+                    errorState = true;
+                    cfbFIx = true;
+
+                    $('.tt-form-input select.form-control').trigger('input');
+                    // updateErrorList();
+
+                    $('.controls-footer-box h4').text($('.controls-footer-box h4').attr('data-invalid'));
+                    $('.text-field-controls .btn-submit').text($('.text-field-controls .btn-submit').attr('data-invalid'));
+                    $('.error-details').slideDown();
+
+                    if ($('.text-field-controls .btn-submit').hasClass('processed-once')) {
+                        //console.log('clicked processed once');
+                        $('.tt-forms').removeClass('current-blur');
+                        swiper.slideTo(slidesWIthErrors[0]);
+                        if (isDesktop) {
+                            app.scrollToPos(0);
+                        } else {
+                            app.scrollToPos($('#content').offset().top);
+                        }
+                    }
+
+
+                } else {
+
+
+                    submitFinal = true;
+
+                    if (isDesktop) {
+                        if (!$('.controls-footer-box:visible').length) {
+                            $('.controls-footer-box, .controls-box-spacer').slideDown();
+                        }
+                        if (errorState) {
+
+                            $('.tt-forms').addClass('current-blur');
+                            swiper.slideTo(swiperLen - 1)
+
+                            if ($('.footer-cols:visible').length) {
+                                app.scrollToPos(($('.footer-cols').offset().top + 60) - $(window).height());
+                            } else {
+                                app.scrollToPos(($(document).height() + 60) - $(window).height());
+                            }
+
+                            $('.error-details').hide();
+                            lastPaneSubmitStage();
+                            setTimeout(function () {
+                                $('.controls-footer-box .btn-submit').focus();
+                            }, 800);
+
+                            toggleSwipperMovement(false);
+
+                            errorState = false;
+                            submitFinal = true;
+                        } else {
+                            if (noErrorsFirstTime) {
+                                submitFinal = true;
+                            } else {
+                                submitFinal = false;
+                            }
+                        }
+                    } else {
+                        submitFinal = false;
+                    }
+
+                    if (submitFinal) {
+                        return false;
+                    } else {
+                        var googleId = "";
+                        if (typeof ga !== 'undefined') {
+                            if (typeof googleId !== 'undefined') {
+                                googleId = ga.getAll()[0].get('clientId');
+                            }
+                        }
+                        e.preventDefault();
+                        $("#testdriveformdiv button").attr("disabled", true);
+                        $(".hide-submit").show();
+                        //$.blockUI({ message: '<div class="spinner"> <div class="dot1"></div><div class="dot2"></div></div>' });
+                        $.ajax({
+                            url: "/api/feature/forms/sendcustomertestdrivedata",
+                            cache: false,
+                            type: "POST",
+                            data: {
+                                Vehicle: $('.car-model-combobox').closest('.form-group').find('.custom-combobox-input').val(),
+                                FirstName: $('#fname').val(),
+                                LastName: $('#surname').val(),
+                                PhoneNumber: $('#phone').val(),
+                                Email: $('#email').val(),
+                                City: $('#city-select2').closest('.form-group').find('.custom-combobox-input').val(),
+                                PreferredDay: $('input[name=radio-preferday]:checked').val(),
+                                PreferredTime: $('input[name=radio-prefertime]:checked').val(),
+                                CallbackPreferredTime: $('input[name=radio-preferred-calltime]:checked').val(),
+                                MessageType: $('#messagetype').val(),
+                                MessageSource: $('#messagesource').val(),
+                                GoogleID: googleId,
+                                RecaptchaResponse: grecaptchaResponse
+                            },
+                            success: function (data) {
+                                //$.unblockUI();
+                                $("#testdriveformdiv button").attr("disabled", false);
+                                $(".hide-submit").hide();
+                                if (data && data.success) {
+                                    $('#testdriveformerror').hide();
+                                    $('#testdriveformdiv').hide();
+                                    $('#testdriveformsuccess').show();
+
+
+                                    dataLayer.push({ 'modelGrade': $('.car-model-combobox').closest('.form-group').find('.custom-combobox-input').val() });
+                                    dataLayer.push({ 'product': $('.car-model-combobox').closest('.form-group').find('.custom-combobox-input').val() });
+                                    dataLayer.push({ 'vehicleName': $('.car-model-combobox').closest('.form-group').find('.custom-combobox-input').val() });
+                                    dataLayer.push({ 'preferredDay': $('input[name=radio-preferday]:checked').val() });
+                                    dataLayer.push({ 'timeSlot': $('input[name=radio-preferred-calltime]:checked').val() });
+                                    dataLayer.push({ 'timeOfDay': $('input[name=radio-prefertime]:checked').val() });
+                                    dataLayer.push({ 'marketingComms': 'Newsletter' });
+
+                                    dataLayer.push({ 'event': 'testDriveConfirmation' });
+
+
+                                    //dataLayer[0]["Event"] = "testDriveConfirmation";
+
+                                    //dataLayer[0]["modelGrade"] = $('.car-model-combobox').closest('.form-group').find('.custom-combobox-input').val();
+
+                                    //dataLayer[0]["product"] = $('.car-model-combobox').closest('.form-group').find('.custom-combobox-input').val();
+
+                                    //dataLayer[0]["vehicleName"] = $('.car-model-combobox').closest('.form-group').find('.custom-combobox-input').val();
+
+                                    //dataLayer[0]["preferredDay"] = $('input[name=radio-preferday]:checked').data('text');
+
+                                    //dataLayer[0]["timeSlot"] = $('input[name=radio-preferred-calltime]:checked').data('text');
+
+                                    //dataLayer[0]["timeOfDay"] = $('input[name=radio-prefertime]:checked').data('text');
+
+                                    //dataLayer[0]["marketingComms"] = 'Newsletter';
+                                } else {
+                                    $('#testdriveformsuccess').hide();
+                                    $('#testdriveformdiv').hide();
+                                    $('#testdriveformerror').show();
+                                    //console.log("Send Customer Feedback data failed to save!.");
+                                }
+                                $(window).scrollTop(0);
+                            },
+                            error: function (xhr, ajaxOptions, thrownError) {
+                                //$.unblockUI();
+                                $("#testdriveformdiv button").attr("disabled", false);
+                                $(".hide-submit").hide();
+                                $(window).scrollTop(0);
+                                //console.log("Send Customer Testdrive data AJAX Call Failed.");
+                            }
+                        });
+                    }
+
+                }
+            });
+
+            function lastPaneSubmitStage() {
+                $('.error-details').slideUp();
+                $('.controls-footer-box h4').text($('.controls-footer-box h4').attr('data-valid'));
+                $('.text-field-controls .btn-submit').text($('.text-field-controls .btn-submit').attr('data-valid'));
+
+            }
+
+            function lastControlsDataAttributes() {
+                $('.controls-footer-box h4').attr('data-valid', $('.controls-footer-box h4').text());
+                $('.text-field-controls .btn-submit').attr('data-valid', $('.text-field-controls .btn-submit').text())
+            }
+
+            lastControlsDataAttributes();
+
+
+            swiper.on('slideChange', function () {
+                removeButtonClass();
+                updatePagination();
+                $(".datepicker").hide();
+            });
+
+            swiper.on('slideChangeTransitionStart', function () {
+                validateField();
+            });
+
+            swiper.on('slideChangeTransitionEnd', function () {
+                focusElements();
+            });
+
+
+            var mobileReviewBar = false;
+            var mobileReviewBarUseable = true;
+
+
+            if (!isDesktop) {
+                $lastBtn.text($lastBtn.attr('data-submit-text'));
+            }
+
+            $('.tt-forms .text-field-controls .btn:not(.btn-submit)').click(function (e) {
+
+                if ($(".online-sales-updt").length != "1") {
+                    validateFieldCurrent();
+                    if (!$(swiper.slides[swiper.realIndex]).find('.form-group.has-error').length) {
+                        sp_next();
+                    }
+                }
+                
+
+
+                if ($(this).closest('.last-slide').length) {
+
+                    if (isDesktop) {
+                        activateLastPanel();
+                    } else {
+                        activateLastPanelMobile();
+                    }
+
+                }
+            });
+
+            function activateLastPanelMobile() {
+
+                if ($('.tt-forms .has-error').length) {
+
+                    updateErrorList();
+                    toggleSwipperMovement(false);
+
+                    // mobileReviewBar = true;
+                    $('.tt-forms').addClass('current-blur');
+                    $('.text-field-controls .btn-submit').addClass('processed-once');
+                    $('.controls-footer-box h4').text($('.controls-footer-box h4').attr('data-invalid'));
+                    $('.text-field-controls .btn-submit').text($('.text-field-controls .btn-submit').attr('data-invalid'));
+                    $('.tt-forms').addClass('review-bar-mobile');
+                    setTimeout(function () {
+                        $('.tt-forms .controls-footer-box').css('opacity', 1);
+                    }, 200);
+                    app.scrollToPos($('header').height());
+
+
+                } else {
+                    updateErrorList();
+                }
+
+            }
+
+            // set required formgroups in srray
+            $('.tt-forms .swiper-slide').each(function () {
+                if ($(this).find('.is-required').length) {
+                    requiredFormGroups.push($(this).find('.is-required'))
+                }
+            });
+
+            if ($('.tt-forms .progress-bar').length) {
+                updatePagination();
+            }
+
+
+            //get in touch
+            $('.radio-strip label.radio').click(function (e) {
+                if ($(this).data('value') == "general" || $(this).data('value') == "sales" || $(this).data('value') == "complaint") {
+                    var formtype = $(this).data('value');
+                    //console.log('formtype', formtype);
+                    var messageType = $('#' + $(this).data('value') + 'messagetype').val();
+                    //console.log('messageType', messageType);
+                    $('.radio-strip.current-radio-strip').removeClass('current-radio-strip');
+                    $('.checkbox-selection').removeClass('checkbox-selection');
+                    $(this).find('.form-check-input').prop('checked', true);
+                    $('#form-type-title').text($(this).data('title'));
+                    $('#form-type-summary').html($(this).data('summary'));
+                    splashScreenHide();
+                    e.preventDefault();
+
+                    if ($(this).data('value') != "sales") {
+                        swiper.destroy(true, true);
+                        setMobileHeights();
+                        $('#car-selection').remove();
+                        $('#selected-title').remove();
+                        $('#selected-car').remove();
+                        toyotaforms.UpdateNumber();
+                        swiper = new Swiper('.tt-forms .swiper-container', {
+                            direction: 'vertical',
+                            mousewheel: true,
+                            observer: true,
+                            observeParents: true,
+                            spaceBetween: 30,
+                            centeredSlides: true,
+                            slidesPerView: 'auto',
+                            autoHeight: true,
+                            preventIntercationOnTransition: true,
+                            allowTouchMove: false,
+                            preventClicks: false,
+                            allowSlidePrev: false,
+                            allowSlideNext: false,
+                            navigation: {
+                                nextEl: '.swiper-button-next',
+                                prevEl: '.swiper-button-prev',
+                            },
+                            keyboard: {
+                                enabled: true,
+                                onlyInViewport: false,
+                            },
+                            breakpoints: {
+                                767: {
+                                    slidesPerView: 1,
+                                    spaceBetween: 0,
+                                    mousewheel: false,
+                                    allowTouchMove: false,
+                                }
+                            }
+                        });
+                        swiperLen = swiper.slides ? swiper.slides.length : 0;
+                        swiper.on('slideChange', function () {
+                            removeButtonClass();
+                            updatePagination();
+                        });
+
+                        swiper.on('slideChangeTransitionStart', function () {
+                            validateField();
+                        });
+
+                        swiper.on('slideChangeTransitionEnd', function () {
+                            focusElements();
+                        });
+
+                        requiredFormGroups = [];
+                        // set required formgroups in srray
+                        $('.tt-forms .swiper-slide').each(function () {
+                            if ($(this).find('.is-required').length) {
+                                requiredFormGroups.push($(this).find('.is-required'))
+                            }
+                        });
+
+                        if ($('.tt-forms .progress-bar').length) {
+                            updatePagination();
+                        }
+
+                    }
+
+
+                    $('#get-in-touch-form').validator({
+                        focus: false,
+                        disable: false,
+                    }).on('submit', function (e) {
+
+                        if (e.isDefaultPrevented()) {
+
+                            toggleSwipperMovement(true);
+                            if (isDesktop) {
+                                if ($('.controls-footer-box:visible').length) {
+                                    $('.controls-footer-box, .controls-box-spacer').slideUp();
+                                }
+                            } else {
+                                if ($('.controls-footer-box:visible').length) {
+
+                                    $('.tt-forms').removeClass('review-bar-mobile');
+                                    setTimeout(function () {
+                                        $('.tt-forms .controls-footer-box').css('opacity', 0);
+                                    }, 200);
+
+                                }
+
+                            }
+
+                            errorState = true;
+                            cfbFIx = true;
+
+                            $('.tt-form-input select.form-control').trigger('input');
+                            // updateErrorList();
+
+                            $('.controls-footer-box h4').text($('.controls-footer-box h4').attr('data-invalid'));
+                            $('.text-field-controls .btn-submit').text($('.text-field-controls .btn-submit').attr('data-invalid'));
+                            $('.error-details').slideDown();
+
+                            if ($('.text-field-controls .btn-submit').hasClass('processed-once')) {
+                                //console.log('clicked processed once');
+                                $('.tt-forms').removeClass('current-blur');
+                                swiper.slideTo(slidesWIthErrors[0]);
+                                if (isDesktop) {
+                                    app.scrollToPos(0);
+                                } else {
+                                    app.scrollToPos($('#content').offset().top);
+                                }
+                            }
+
+                        } else {
+
+                            submitFinal = true;
+
+                            if (isDesktop) {
+                                if (!$('.controls-footer-box:visible').length) {
+                                    $('.controls-footer-box, .controls-box-spacer').slideDown();
+                                }
+                                if (errorState) {
+
+                                    $('.tt-forms').addClass('current-blur');
+                                    swiper.slideTo(swiperLen - 1)
+
+
+                                    if ($('.footer-cols:visible').length) {
+                                        app.scrollToPos(($('.footer-cols').offset().top + 60) - $(window).height());
+                                    } else {
+                                        app.scrollToPos(($(document).height() + 60) - $(window).height());
+                                    }
+
+                                    $('.error-details').hide();
+                                    lastPaneSubmitStage();
+                                    setTimeout(function () {
+                                        $('.controls-footer-box .btn-submit').focus();
+                                    }, 800);
+
+                                    toggleSwipperMovement(false);
+
+                                    errorState = false;
+                                    submitFinal = true;
+                                } else {
+                                    if (noErrorsFirstTime) {
+                                        submitFinal = true;
+                                    } else {
+                                        submitFinal = false;
+                                    }
+                                }
+                            } else {
+                                submitFinal = false;
+                            }
+
+                            if (submitFinal) {
+                                return false;
+                            } else {
+
+                                e.preventDefault();
+                                var googleId = "";
+                                if (typeof ga !== 'undefined') {
+                                    if (typeof googleId !== 'undefined') {
+                                        googleId = ga.getAll()[0].get('clientId');
+                                    }
+                                }
+                                // console.log("googleId", ga.getAll()[0].get('clientId'));
+
+                                $("#get-in-touch-form button").attr("disabled", true);
+                                $(".hide-submit").show();
+                                //$.blockUI({ message: '<div class="spinner"> <div class="dot1"></div><div class="dot2"></div></div>' });
+                                $.ajax({
+                                    url: "/api/feature/forms/sendcustomerfeedbackdata",
+                                    cache: false,
+                                    type: "POST",
+                                    data: {
+                                        Vehicle: $('.car-model-combobox').closest('.form-group').find('.custom-combobox-input').val(),
+                                        FirstName: $('#fname').val(),
+                                        LastName: $('#surname').val(),
+                                        PhoneNumber: $('#phone').val(),
+                                        Email: $('#email').val(),
+                                        CallbackPreferredTime: $('input[name=radio-preferred-calltime]:checked').val(),
+                                        SubscribeNewsletter: $('#chknewsletter').is(":checked"),
+                                        SubscribeLatestOffers: $('#chkoffers').is(":checked"),
+                                        FormType: formtype,
+                                        Message: $('#message').val(),
+                                        MessageType: messageType,
+                                        MessageSource: $('#messagesource').val(),
+                                        GoogleID: googleId,
+                                        RecaptchaResponse: grecaptchaResponse
+                                    },
+                                    success: function (data) {
+                                        //$.unblockUI();
+                                        $("#get-in-touch-form button").attr("disabled", false);
+                                        $(".hide-submit").hide();
+                                        if (data && data.success) {
+                                            $('#getintouchformdiv').hide();
+                                            $('#getintouchformerror').hide();
+                                            $('#getintouchformsuccess').show();
+
+                                            dataLayer.push({ 'EnquiryType': formtype });
+
+                                            dataLayer.push({ 'modelGrade': $('.car-model-combobox').closest('.form-group').find('.custom-combobox-input').val() });
+                                            dataLayer.push({ 'product': $('.car-model-combobox').closest('.form-group').find('.custom-combobox-input').val() });
+                                            dataLayer.push({ 'vehicleName': $('.car-model-combobox').closest('.form-group').find('.custom-combobox-input').val() });
+                                            dataLayer.push({ 'timeOfDay': $('input[name=radio-preferred-calltime]:checked').val() });
+                                            dataLayer.push({ 'marketingComms': 'Newsletter' });
+                                            dataLayer.push({ 'timeSlot': $('input[name=radio-preferred-calltime]:checked').val() });
+                                            dataLayer.push({ 'event': 'getinTouchConfirmation' });
+
+                                            //dataLayer[0]["EnquiryType"] = formtype;
+
+                                            //dataLayer[0]["Event"] = "getinTouchConfirmation";
+
+                                            //dataLayer[0]["modelGrade"] = $('.car-model-combobox').closest('.form-group').find('.custom-combobox-input').val();
+
+                                            //dataLayer[0]["product"] = $('.car-model-combobox').closest('.form-group').find('.custom-combobox-input').val();
+
+                                            //dataLayer[0]["vehicleName"] = $('.car-model-combobox').closest('.form-group').find('.custom-combobox-input').val();
+
+                                            //dataLayer[0]["timeOfDay"] = $('input[name=radio-preferred-calltime]:checked').data('text');
+
+                                            //dataLayer[0]["marketingComms"] = 'Newsletter';
+
+                                            //dataLayer[0]["timeOfDay"] = $(".swiper-slide .tt-form-input .radio-strip .form-check-input:checked~span").text();
+
+                                        } else {
+                                            $('#getintouchformdiv').hide();
+                                            $('#getintouchformsuccess').hide();
+                                            $('#getintouchformerror').show();
+                                            //console.log("Send Customer Feedback data failed to save!.");
+                                        }
+                                    },
+                                    error: function (xhr, ajaxOptions, thrownError) {
+                                        //$.unblockUI();
+                                        $("#get-in-touch-form button").attr("disabled", false);
+                                        $(".hide-submit").hide();
+                                        // console.log("Send Customer Feedback data AJAX Call Failed.");
+                                    }
+                                });
+                            }
+                        }
+
+                    });
+                    //
+                    return false;
+                }
+                else if ($(this).data('value') == "cash" || $(this).data('value') == "lease") {
+                    var messageType = $('#' + $(this).data('value') + 'messagetype').val();
+                    var formtype = $(this).data('value');
+                    $('.radio-strip.current-radio-strip').removeClass('current-radio-strip');
+                    $('.checkbox-selection').removeClass('checkbox-selection');
+                    $(this).find('.form-check-input').prop('checked', true);
+                    $('#form-type-title').text($(this).data('title'));
+                    $('#form-type-summary').html($(this).data('summary'));
+                    splashScreenHide();
+                    e.preventDefault();
+                    if ($(this).data('value') != "lease") {
+
+                        if ($(".online-sales-updt").length != "1") {
+
+                            swiper.destroy(true, true);
+                            setMobileHeights();
+                            $('#income-selection').remove();
+                            toyotaforms.UpdateNumber();
+                            swiper = new Swiper('.tt-forms .swiper-container', {
+                                direction: 'vertical',
+                                mousewheel: true,
+                                spaceBetween: 30,
+                                centeredSlides: true,
+                                slidesPerView: 'auto',
+                                autoHeight: true,
+                                preventIntercationOnTransition: true,
+                                allowTouchMove: false,
+                                preventClicks: false,
+                                allowSlidePrev: false,
+                                allowSlideNext: false,
+                                navigation: {
+                                    nextEl: '.swiper-button-next',
+                                    prevEl: '.swiper-button-prev',
+                                },
+                                keyboard: {
+                                    enabled: true,
+                                    onlyInViewport: false,
+                                },
+                                breakpoints: {
+                                    767: {
+                                        slidesPerView: 1,
+                                        spaceBetween: 0,
+                                        mousewheel: false,
+                                        allowTouchMove: false,
+                                    }
+                                }
+                            });
+                            swiperLen = swiper.slides ? swiper.slides.length : 0;
+                            swiper.on('slideChange', function () {
+                                removeButtonClass();
+                                updatePagination();
+                            });
+
+                            swiper.on('slideChangeTransitionStart', function () {
+                                validateField();
+                            });
+
+                            swiper.on('slideChangeTransitionEnd', function () {
+                                focusElements();
+                            });
+
+                        }
+                        else {
+                            $('#income-selection').remove();
+                        }
+                        requiredFormGroups = [];
+                        // set required formgroups in srray
+                        $('.tt-forms .swiper-slide').each(function () {
+                            if ($(this).find('.is-required').length) {
+                                requiredFormGroups.push($(this).find('.is-required'))
+                            }
+                        });
+
+                        if ($('.tt-forms .progress-bar').length) {
+                            updatePagination();
+                        }
+
+                    }
+                    $('#online-sales-form').validator({
+                        focus: false,
+                        disable: false,
+                    }).on('submit', function (e) {
+
+                        if (e.isDefaultPrevented()) {
+
+                            toggleSwipperMovement(true);
+                            if (isDesktop) {
+                                if ($('.controls-footer-box:visible').length) {
+                                    $('.controls-footer-box, .controls-box-spacer').slideUp();
+                                }
+                            } else {
+                                if ($('.controls-footer-box:visible').length) {
+
+                                    $('.tt-forms').removeClass('review-bar-mobile');
+                                    setTimeout(function () {
+                                        $('.tt-forms .controls-footer-box').css('opacity', 0);
+                                    }, 200);
+
+                                }
+
+                            }
+
+                            errorState = true;
+                            cfbFIx = true;
+
+                            $('.tt-form-input select.form-control').trigger('input');
+                            // updateErrorList();
+
+                            $('.controls-footer-box h4').text($('.controls-footer-box h4').attr('data-invalid'));
+                            $('.text-field-controls .btn-submit').text($('.text-field-controls .btn-submit').attr('data-invalid'));
+                            $('.error-details').slideDown();
+
+                            if ($('.text-field-controls .btn-submit').hasClass('processed-once')) {
+                                // console.log('clicked processed once');
+                                $('.tt-forms').removeClass('current-blur');
+                                swiper.slideTo(slidesWIthErrors[0]);
+                                if (isDesktop) {
+                                    app.scrollToPos(0);
+                                } else {
+                                    app.scrollToPos($('#content').offset().top);
+                                }
+                            }
+
+
+                        } else {
+
+                            submitFinal = true;
+
+                            if (isDesktop) {
+                                if (!$('.controls-footer-box:visible').length) {
+                                    $('.controls-footer-box, .controls-box-spacer').slideDown();
+                                }
+                                if (errorState) {
+
+                                    $('.tt-forms').addClass('current-blur');
+                                    swiper.slideTo(swiperLen - 1)
+
+
+                                    if ($('.footer-cols:visible').length) {
+                                        app.scrollToPos(($('.footer-cols').offset().top + 60) - $(window).height());
+                                    } else {
+                                        app.scrollToPos(($(document).height() + 60) - $(window).height());
+                                    }
+
+                                    $('.error-details').hide();
+                                    lastPaneSubmitStage();
+                                    setTimeout(function () {
+                                        $('.controls-footer-box .btn-submit').focus();
+                                    }, 800);
+
+                                    toggleSwipperMovement(false);
+
+                                    errorState = false;
+                                    submitFinal = true;
+                                } else {
+                                    if (noErrorsFirstTime) {
+                                        submitFinal = true;
+                                    } else {
+                                        submitFinal = false;
+                                    }
+                                }
+                            } else {
+                                submitFinal = false;
+                            }
+
+                            if (submitFinal) {
+                                return false;
+                            } else {
+
+                                e.preventDefault();
+                                //$.blockUI({ message: '<div class="spinner"> <div class="dot1"></div><div class="dot2"></div></div>' });
+                                var googleId = "";
+                                if (typeof ga !== 'undefined') {
+                                    if (typeof googleId !== 'undefined') {
+                                        googleId = ga.getAll()[0].get('clientId');
+                                    }
+                                }
+                                $("#online-sales-form button").attr("disabled", true);
+                                $(".hide-submit").show();
+                                $.ajax({
+                                    url: "/api/feature/forms/sendcustomeronlinesalesdata",
+                                    cache: false,
+                                    type: "POST",
+                                    data: {
+                                        Campaign: $('#campaign').val(),
+                                        Vehicle: $('.car-model-combobox').closest('.form-group').find('.custom-combobox-input').val(),
+                                        VehicleGrade: $('.car-grade-combobox').closest('.form-group').find('.custom-combobox-input').val(),
+                                        FirstName: $('#fname').val(),
+                                        LastName: $('#surname').val(),
+                                        PhoneNumber: $('#phone').val(),
+                                        Email: $('#email').val(),
+                                        IntentToPurchaseWithIn: $('input[name=radio-intend-purchase]:checked').val(),
+                                        CallbackPreferredTime: $('input[name=radio-preferred-calltime]:checked').val(),
+                                        SubscribeNewsletter: $('#chknewsletter').is(":checked"),
+                                        SubscribeLatestOffers: $('#chkoffers').is(":checked"),
+                                        City: $('#city-select2').closest('.form-group').find('.custom-combobox-input').val(),
+                                        FormType: formtype,
+                                        MonthlyIncome: $('#income').val(),
+                                        MessageType: messageType,
+                                        MessageSource: $('#messagesource').val(),
+                                        GoogleID: googleId,
+                                        RecaptchaResponse: grecaptchaResponse
+                                    },
+                                    success: function (data) {
+                                        //$.unblockUI();
+                                        $("#online-sales-form button").attr("disabled", false);
+                                        $(".hide-submit").hide();
+                                        if (data && data.success) {
+
+                                            $('#onlinesalesdiv').hide();
+                                            $('#onlinesalesformerror').hide();
+                                            $('#onlinesalesformsuccess').show();
+
+
+
+                                            dataLayer.push({ 'vehicleName': $('.car-model-combobox').closest('.form-group').find('.custom-combobox-input').val() });
+                                            dataLayer.push({ 'modelGrade': $('.car-grade-combobox').closest('.form-group').find('.custom-combobox-input').val() });
+                                            dataLayer.push({ 'product': $('.car-model-combobox').closest('.form-group').find('.custom-combobox-input').val() });
+                                            dataLayer.push({ 'timeOfDay': $('input[name=radio-preferred-calltime]:checked').data('text') });
+                                            dataLayer.push({ 'timeSlot': "" });
+                                            dataLayer.push({ 'marketingComms': 'Newsletter' });
+                                            dataLayer.push({ 'purchaseIntent': $('input[name=radio-intend-purchase]:checked').val() });
+                                            dataLayer.push({ 'financeType': $(".main-heading .tt-form-input .radio-strip .form-check-input:checked").val() });
+
+                                            dataLayer.push({ 'event': 'buyNowConfirmation' });
+                                            //dataLayer[0]["Event"] = "buyNowConfirmation";
+
+                                            //dataLayer[0]["vehicleName"] = $('.car-model-combobox').closest('.form-group').find('.custom-combobox-input').val();
+
+                                            //dataLayer[0]["modelGrade"] = $('.car-grade-combobox').closest('.form-group').find('.custom-combobox-input').val();
+
+                                            //dataLayer[0]["product"] = $('.car-model-combobox').closest('.form-group').find('.custom-combobox-input').val();
+
+                                            //dataLayer[0]["timeOfDay"] = $('input[name=radio-preferred-calltime]:checked').data('text');
+                                            //dataLayer[0]["timeSlot"] = $('input[name=radio-intend-purchase]:checked').data('text');
+
+
+                                            //dataLayer[0]["marketingComms"] = 'Newsletter';
+
+                                            //dataLayer[0]["purchaseIntent"] = $('input[name=radio-intend-purchase]:checked').val();
+
+                                            //dataLayer[0]["modelGrade"] = $('.car-grade-combobox').closest('.form-group').find('.custom-combobox-input').val();
+                                            //dataLayer[0]["financeType"] = $(".main-heading .tt-form-input .radio-strip .form-check-input:checked~span").text();
+
+                                        } else {
+                                            $('#onlinesalesdiv').hide();
+                                            $('#onlinesalesformsuccess').hide();
+                                            $('#onlinesalesformerror').show();
+                                            //console.log("Send Customer Feedback data failed to save!.");
+                                        }
+                                        $(window).scrollTop(0);
+                                    },
+                                    error: function (xhr, ajaxOptions, thrownError) {
+                                        //$.unblockUI();
+                                        $("#online-sales-form button").attr("disabled", false);
+                                        $(".hide-submit").hide();
+                                        $(window).scrollTop(0);
+                                        //console.log("Send Customer Feedback data AJAX Call Failed.");
+                                    }
+                                });
+                            }
+                        }
+                    });
+                    return false;
+                }
+                else if ($(this).closest('.splash-screen').length) {
+                    $('.radio-strip.current-radio-strip').removeClass('current-radio-strip');
+                    $('.checkbox-selection').removeClass('checkbox-selection');
+                    $(this).find('.form-check-input').prop('checked', true);
+                    splashScreenHide();
+                    e.preventDefault();
+                    return false;
+                } else {
+                    $('.radio-strip.current-radio-strip').removeClass('current-radio-strip');
+                    $(this).closest('.radio-strip').addClass('current-radio-strip');
+
+                    $('.checkbox-selection').removeClass('checkbox-selection');
+                    $(this).find('.form-check-input').trigger('change');
+
+                    updatePagination();
+                    requiredFillMove(this);
+                }
+            });
+
+
+
+            if ($('.splash-screen .action-btn').length) {
+                if (isDesktop) {
+                    $(document).keydown(splashScreenFormStart);
+                }
+            } else if ($('.splash-screen .radio-group').length) {
+                if (isDesktop) {
+                    var $rs = $('.splash-screen .radio-group').find('.radio-strip').first();
+                    $rs.addClass('current-radio-strip');
+                    $rs.closest('.tt-form-input').find('.radio-controls').focus();
+                    $rs.find('label.radio').first().addClass('checkbox-selection');
+                }
+            }
+
+            $('.splash-screen .action-btn').click(function () {
+                splashScreenHide();
+            });
+
+            function requiredFillMove(el) {
+                //    move to next slide if all requred checkboxes are checked
+                if (isDesktop)
+                    return;
+
+                var requiredFields = $(el).closest('.tt-form-input').find('.form-group.is-required');
+                var isSuccess = true;
+                requiredFields.each(function () {
+                    if (!$(this).hasClass('has-success')) {
+                        isSuccess = false;
+                    }
+                });
+
+                if (isSuccess) {
+                    sp_next();
+                }
+            }
+
+            function toggleSwipperMovement(state) {
+                swiper.allowSlidePrev = state;
+                swiper.allowSlideNext = state;
+            }
+
+            function validateFullForm() {
+                form.validator('validate');
+                $($('.tt-form-input .custom-combobox-input').closest('.form-group')).find('select.form-control').trigger('input');
+            }
+
+            function updateErrorList() {
+                validateFullForm();
+
+                slidesWIthErrors = [];
+                errorLength = $('.tt-forms .has-error').length;
+
+                if (errorLength == 0) {
+                    $('.tt-forms form').submit();
+                }
+
+                $('.controls-footer-box').find('.num').text(errorLength);
+                for (i = 0; i < swiperLen; i++) {
+                    if (swiper.slides.eq(i).find('.form-group.has-error').length) {
+                        slidesWIthErrors.push(i)
+                    }
+                }
+            }
+
+            function sp_next() {
+
+                if (errorState) {
+
+                    // validateField();
+                    updateErrorList();
+
+                    moveTo = null;
+
+                    for (i = 0; i < slidesWIthErrors.length; i++) {
+                        if (slidesWIthErrors[i] > swiper.realIndex) {
+                            moveTo = slidesWIthErrors[i];
+                            break;
+                        }
+                    }
+                    if (moveTo == null) {
+                        if (swiper.realIndex > slidesWIthErrors[slidesWIthErrors.length - 1]) {
+                            moveTo = slidesWIthErrors[0];
+                        } else {
+                            moveTo = slidesWIthErrors[slidesWIthErrors.length - 1];
+                        }
+
+                    }
+
+                    if (moveTo != undefined) {
+                        if (!$(swiper.slides[swiper.realIndex]).hasClass('last-slide')) {
+                            swiper.slideTo(moveTo);
+                        }
+                    }
+
+                } else {
+                    swiper.slideNext();
+                }
+            }
+
+            function sp_prev() {
+                return false;
+
+                if (errorState) {
+                    moveTo = null;
+                    for (i = 0; i < slidesWIthErrors.length; i++) {
+                        if (slidesWIthErrors[i] >= swiper.realIndex) {
+                            moveTo = slidesWIthErrors[i - 1];
+                            break;
+                        }
+                    }
+                    if (moveTo == null) {
+                        moveTo = slidesWIthErrors[0];
+                    }
+
+                    swiper.slideTo(moveTo);
+                }
+            }
+
+            function calculateProgress() {
+                var num = 0;
+                requiredFormGroups.forEach(function (array, index) {
+                    hasAllValid = true;
+                    for (var i = 0; i < array.length; i++) {
+                        if (!$(array[i]).hasClass('has-success')) {
+                            hasAllValid = false
+                            break;
+                        }
+                    }
+                    if (hasAllValid) {
+                        num++;
+                    }
+                });
+                return num;
+            }
+
+            function updatePagination() {
+                var num = calculateProgress();
+                num = Math.round(((num) / requiredFormGroups.length) * 100);
+                $percent.html(num + '%');
+                $progressBar.width(num + '%');
+            }
+
+            function removeButtonClass() {
+                currentSlide = $(swiper.slides[swiper.previousIndex]);
+                currentSlide.removeClass('show-btns');
+            }
+
+            function validateField() {
+                currentSlide = $(swiper.slides[swiper.previousIndex]);
+                if (currentSlide.find('.form-group.radio-group').length) {
+                    currentSlide.find('input[type=radio]').trigger('input');
+                } else if (currentSlide.find('select').length) {
+                    currentSlide.find('select.form-control').trigger('input');
+                } else {
+                    currentSlide.find(':input').first().trigger('input');
+                }
+            }
+
+            function validateFieldCurrent() {
+                if ($(".online-sales-updt").length != "1") {
+                    currentSlide = $(swiper.slides[swiper.realIndex]);
+                    if (currentSlide.find('.form-group.radio-group').length) {
+                        currentSlide.find('input[type=radio]').trigger('input');
+                    } else if (currentSlide.find('select').length) {
+                        currentSlide.find('select.form-control').trigger('input');
+                    } else {
+                        currentSlide.find(':input').first().trigger('input');
+                    }
+                    updatePagination();
+                }
+               
+            }
+
+            function focusElements(index) {
+
+                $('.checkbox-selection').removeClass('checkbox-selection');
+                $('.radio-controls').blur();
+
+                if (swiper.slides) {
+                    currentSlide = index ? $(swiper.slides[index]) : $(swiper.slides[swiper.realIndex]);
+
+                    if (currentSlide.find('.custom-combobox').length) {
+                        // for combobox / dropdown
+                        currentSlide.find('.custom-combobox-input').focus();
+                        if (!isDesktop) {
+                            // currentSlide.find('.custom-combobox-input').next().trigger('click');
+                        }
+                    } else if (currentSlide.find('.radio-group').length) {
+                        // for radio buttons
+                        radioSelection(currentSlide.find('.radio-strip').first());
+                    } else if (currentSlide.find('input[type=checkbox].form-check-input').length) {
+                        // for checkbox
+                        if (currentSlide.find('input[type=checkbox]:checked').length) {
+                            currentSlide.find('input[type=checkbox]:checked ~ .form-check-label').focus()
+                        } else {
+                            currentSlide.find('.form-check-label').first().focus();
+                        }
+                    } else {
+                        currentSlide.find('.form-control').first().focus();
+                    }
+                }
+
+            }
+
+            function radioSelection(currentSlide) {
+
+                $(document.activeElement).blur();
+                $('.current-radio-strip').removeClass('current-radio-strip');
+                currentSlide.addClass('current-radio-strip');
+                $('.checkbox-selection').removeClass('checkbox-selection');
+                if (currentSlide.find('input[type=radio]:checked').length) {
+                    currentSlide.find('input[type=radio]:checked').closest('.radio').focus();
+                } else {
+                    if (isDesktop) {
+                        currentSlide.closest('.swiper-slide').find('.radio-controls').focus();
+                    }
+                    currentSlide.find('label.radio').first().addClass('checkbox-selection');
+                }
+
+            }
+
+
+            function activateLastPanel() {
+
+                if ($('.controls-footer-box:visible').length)
+                    return;
+
+                updateErrorList();
+
+                if (noErrorsFirstTime && !$('.tt-forms .has-error').length) {
+                    noErrorsFirstTime = false;
+
+                    $('.tt-forms').addClass('current-blur');
+
+                    if ($('.footer-cols:visible').length) {
+                        app.scrollToPos(($('.footer-cols').offset().top + 60) - $(window).height());
+                    } else {
+                        app.scrollToPos(($(document).height() + 60) - $(window).height());
+                    }
+
+                    $('.controls-box-spacer').slideDown();
+                    $('.controls-footer-box').slideDown();
+
+                    positionX = window.scrollX;
+                    positionY = window.scrollY;
+                    $('.controls-footer-box .btn-submit').focus();
+                    window.scrollTo(positionX, positionY);
+
+                    toggleSwipperMovement(false);
+                    return;
+                }
+
+                noErrorsFirstTime = false;
+
+                if (!$('.tt-forms .has-error').length)
+                    return;
+
+                $('.controls-footer-box h4').text($('.controls-footer-box h4').attr('data-invalid'));
+                $('.text-field-controls .btn-submit').text($('.text-field-controls .btn-submit').attr('data-invalid'));
+                $('.error-details').show();
+
+
+                $('.tt-forms').addClass('current-blur');
+
+                if ($('.footer-cols:visible').length) {
+                    app.scrollToPos(($('.footer-cols').offset().top + 60) - $(window).height());
+                } else {
+                    app.scrollToPos(($(document).height() + 60) - $(window).height());
+                }
+
+                $('.controls-box-spacer').slideDown();
+                $('.controls-footer-box').slideDown();
+
+                positionX = window.scrollX;
+                positionY = window.scrollY;
+                $('.controls-footer-box .btn-submit').focus();
+                window.scrollTo(positionX, positionY);
+
+                $('.text-field-controls .btn-submit').addClass('processed-once');
+
+                toggleSwipperMovement(false);
+
+            }
+
+            function splashScreenHide() {
+                $('.splash-screen').fadeOut(function () {
+                    $('body').addClass('form-start');
+                    toggleSwipperMovement(true)
+                });
+                if (!isDesktop) {
+                    app.scrollToPos($('#content').offset().top);
+                }
+                focusElements();
+            }
+
+            function splashScreenFormStart(e) {
+                var code = e.keyCode || e.which
+                if (e.keyCode === 13) {
+                    splashScreenHide();
+                    $(document).unbind("keydown", splashScreenFormStart);
+                    return false;
+                }
+            }
+
+            function moveInDirection(direction) {
+                if (direction == 1) {
+                    sp_next();
+                } else {
+                    swiper.slidePrev();
+                }
+            }
+
+            function multiTextKeyboardNav($field, direction) {
+                var x = $field.closest('.multi-text'),
+                    list = $field.closest('.tt-form-input').find('.multi-text'),
+                    length = list.length,
+                    indexFound;
+                direction = (direction === 'up' ? -1 : 1);
+
+                list.each(function (index, item) {
+                    if ($(item).is(x)) {
+                        indexFound = index;
+                        return;
+                    }
+                });
+
+                if (list[indexFound + direction] == undefined) {
+                    moveInDirection(direction);
+                } else {
+                    $(list[indexFound + direction]).find('.form-control').focus();
+                }
+            }
+
+            textFIelds.each(function () {
+                $(this).data('currentVal', $(this).val());
+            });
+
+            textFIelds.keyup(function (e) {
+                var code = e.keyCode || e.which;
+                if ($(this).val() != $(this).data('currentVal')) {
+                    $(this).closest('.swiper-slide').addClass('show-btns');
+                }
+            });
+
+            textFIelds.keydown(function (e) {
+                var code = e.keyCode || e.which;
+
+                if ($(this).val() != $(this).data('currentVal')) {
+                    $(this).closest('.swiper-slide').addClass('show-btns');
+                }
+
+                $(this).data('currentVal', $(this).val());
+
+                if (code === 13) {
+                    // ENTER
+                    validateFieldCurrent();
+                    if (!$(swiper.slides[swiper.realIndex]).find('.form-group.has-error').length) {
+                        $(this).trigger('blur');
+                        $(this).blur();
+                        sp_next();
+                    }
+                    e.preventDefault();
+                    return false;
+                } else if (code === 38) {
+                    // Up arrow
+
+                    if ($(this).closest('.multi-text').length) {
+                        multiTextKeyboardNav($(this), 'up');
+                        return false;
+                    } else {
+                        swiper.slidePrev();
+                        validateField();
+                        return false;
+                    }
+
+                } else if (code === 40) {
+                    // Down arrow
+
+                    if ($(this).closest('.multi-text').length) {
+                        multiTextKeyboardNav($(this), 'down');
+                        return false;
+                    } else {
+                        swiper.slideNext();
+                        validateField();
+                        return false;
+                    }
+
+
+                } else if (code === 9) {
+                    // Tab key
+                    e.preventDefault();
+                    return false;
+                }
+
+            });
+
+            $textAreaFields.each(function () {
+                $(this).data('currentVal', $(this).val());
+            });
+
+            $textAreaFields.keyup(function (e) {
+                var code = e.keyCode || e.which;
+                if ($(this).val() != $(this).data('currentVal')) {
+                    $(this).closest('.swiper-slide').addClass('show-btns');
+                }
+            });
+
+            $textAreaFields.keydown(function (e) {
+                var code = e.keyCode || e.which;
+
+                if (code === 9) {
+                    // Tab key
+                    e.preventDefault();
+                    return false;
+                }
+
+                if ($(this).val() != $(this).data('currentVal')) {
+                    $(this).closest('.swiper-slide').addClass('show-btns');
+                }
+
+
+            });
+
+
+            $(document).on('keydown', '.tt-forms .tt-form-input .custom-combobox-input', function (e) {
+                var code = e.keyCode || e.which;
+
+
+                if (code === 9) {
+                    // Tab key
+                    e.preventDefault();
+                    return false;
+                } else if (code === 13) {
+                    // enter key
+                    if (!$(this).closest('.form-group').hasClass('opened')) {
+
+                        $(this).trigger('focusout');
+                        $(this).blur();
+                        validateFieldCurrent();
+                        if (!$(swiper.slides[swiper.realIndex]).find('.form-group.has-error').length) {
+                            sp_next();
+                        } else {
+                            $(swiper.slides[swiper.realIndex]).find('.custom-combobox-input').focus();
+                        }
+                    } else {
+                        $(this).trigger('focusout');
+                        $(this).blur();
+                        validateFieldCurrent();
+                        updatePagination();
+                        if (!$(swiper.slides[swiper.realIndex]).find('.form-group.has-error').length) {
+                            sp_next();
+                        } else {
+                            $(swiper.slides[swiper.realIndex]).find('.custom-combobox-input').focus();
+                        }
+                    }
+                    e.preventDefault();
+                    return false;
+                }
+            });
+
+            $(document).on('keydown', '.radio-controls', function (e) {
+                var code = e.keyCode || e.which;
+
+                if (code === 37) {
+                    // left
+                    if ($('.radio.checkbox-selection').prev('.radio').length) {
+                        $('.radio.checkbox-selection')
+                            .removeClass('checkbox-selection')
+                            .prev('.radio')
+                            .addClass('checkbox-selection');
+                    } else {
+                        $('.radio.checkbox-selection').removeClass('checkbox-selection').siblings().last().addClass('checkbox-selection');
+                    }
+                    e.preventDefault();
+                    return false;
+
+                } else if (code === 39) {
+                    // right
+                    if ($('.radio.checkbox-selection').next('.radio').length) {
+                        $('.radio.checkbox-selection')
+                            .removeClass('checkbox-selection')
+                            .next('.radio')
+                            .addClass('checkbox-selection');
+
+                    } else {
+                        $('.radio.checkbox-selection').removeClass('checkbox-selection').siblings().first().addClass('checkbox-selection');
+                    }
+                    e.preventDefault();
+                    return false;
+
+                } else if (code === 40) {
+                    // down
+
+                    if ($(this).closest('.splash-screen').length) {
+                        e.preventDefault();
+                        return false;
+                    }
+
+                    var rs = $('.radio.checkbox-selection').closest('.radio-group');
+                    if (rs.next('.radio-group').length) {
+                        radioSelection(rs.next('.radio-group').find('.radio-strip'));
+                    } else {
+                        $('.checkbox-selection').removeClass('checkbox-selection');
+                        swiper.slideNext();
+                    }
+                    e.preventDefault();
+                    return false;
+
+                } else if (code === 38) {
+                    // up
+
+                    if ($(this).closest('.splash-screen').length) {
+                        e.preventDefault();
+                        return false;
+                    }
+
+                    var rs = $('.radio.checkbox-selection').closest('.radio-group');
+                    if (rs.prev('.radio-group').length) {
+                        radioSelection(rs.prev('.radio-group').find('.radio-strip'));
+                    } else {
+                        $('.checkbox-selection').removeClass('checkbox-selection');
+                        swiper.slidePrev();
+                    }
+                    e.preventDefault();
+                    return false;
+
+                } else if (code === 13) {
+                    // enter
+
+
+                    if ($(this).closest('.splash-screen').length) {
+                        var x = $('.splash-screen .radio.checkbox-selection');
+                        x.trigger('click');
+                        e.preventDefault();
+                        return false;
+                    }
+
+                    if (isDesktop) {
+                        validateFieldCurrent();
+                        if (!$(swiper.slides[swiper.realIndex]).find('.form-group.has-error').length) {
+                            sp_next();
+                        }
+                    }
+                    e.preventDefault();
+                    return false;
+
+                } else if (code === 32) {
+                    // spacebar
+
+                    if ($(this).closest('.splash-screen').length) {
+
+                        var x = $('.splash-screen .radio.checkbox-selection');
+                        x.trigger('click');
+                        e.preventDefault();
+                        return false;
+                    }
+
+
+                    var x = $('.radio.checkbox-selection');
+                    $('.checkbox-selection').removeClass('checkbox-selection');
+                    x.find('input[type=radio]').prop('checked', true).focus();
+
+
+
+                    var rs = x.closest('.radio-group');
+
+                    if (rs.next('.radio-group').length) {
+                        radioSelection(rs.next('.radio-group').find('.radio-strip'));
+                    }
+
+                    validateFieldCurrent();
+                    updatePagination();
+                    e.preventDefault();
+                    return false;
+
+                } else if (code === 9) {
+                    // Tab key
+                    e.preventDefault();
+                    return false;
+                }
+
+            });
+
+            $(document).on('keydown', '.tt-forms .tt-form-input input[type=radio].form-check-input', function (e) {
+                var code = e.keyCode || e.which;
+
+                if (code === 38) {
+                    // up
+
+
+                    if ($(this).closest('.radio-group').prev('.radio-group').length) {
+                        radioSelection($(this).closest('.radio-group').prev('.radio-group').find('.radio-strip'));
+                    } else {
+                        $(this).blur();
+                        swiper.slidePrev();
+                        validateField();
+                    }
+                    e.preventDefault();
+                    return false;
+                } else if (code === 40) {
+                    // down
+                    if ($(this).closest('.radio-group').next('.radio-group').length) {
+                        radioSelection($(this).closest('.radio-group').next('.radio-group').find('.radio-strip'));
+                    } else {
+                        $(this).blur();
+                        swiper.slideNext();
+                        validateField();
+                    }
+                    e.preventDefault();
+                    return false;
+                } else if (code === 13) {
+                    // enter
+                    if (isDesktop) {
+                        validateFieldCurrent();
+                        if (!$(swiper.slides[swiper.realIndex]).find('.form-group.has-error').length) {
+                            sp_next();
+                        }
+                    }
+                    e.preventDefault();
+                    return false;
+                } else if (code === 32) {
+                    //space
+                    if ($(this).closest('.radio-group').next('.radio-group').length) {
+                        radioSelection($(this).closest('.radio-group').next('.radio-group').find('.radio-strip'));
+                    }
+                    e.preventDefault();
+                    return false;
+                }
+
+            });
+
+            $(document).on('keydown', '.tt-forms .tt-form-input input[type=checkbox]', function (e) {
+                var code = e.keyCode || e.which;
+
+                if (code === 38) {
+                    // up
+                    if ($(this).closest('.form-check').prev('.form-check').length) {
+                        $(this).closest('.form-check').prev('.form-check').find('input[type=checkbox]').focus();
+                    } else {
+                        $(this).blur();
+                        swiper.slidePrev();
+                        validateField();
+                    }
+                    e.preventDefault();
+                    return false;
+                } else if (code === 40) {
+                    // down
+                    if ($(this).closest('.form-check').next('.form-check').length) {
+                        $(this).closest('.form-check').next('.form-check').find('input[type=checkbox]').focus();
+                    } else {
+                        swiper.slideNext();
+                        validateField();
+                    }
+                    e.preventDefault();
+                    return false;
+                } else if (code === 9) {
+                    // Tab key
+                    e.preventDefault();
+                    return false;
+                } else if (code === 13) {
+                    // enter key
+                    if (isDesktop) {
+                        if ($(this).closest('.last-slide').length) {
+                            activateLastPanel();
+                        }
+                        sp_next();
+                        validateField();
+                    }
+                    e.preventDefault();
+                    return false;
+                }
+            });
+
+            $(document).on('keydown', '.controls-footer-box .btn-submit', function (e) {
+                var code = e.keyCode || e.which;
+                if (code === 13) {
+                    // enter key
+                    if (isDesktop) {
+                        $('.tt-forms form').submit();
+                    }
+                    e.preventDefault();
+                    return false;
+                } else if (code === 9) {
+                    // Tab key
+                    e.preventDefault();
+                    return false;
+                }
+            });
+
+            $(document).on('focusout', '.tt-forms .custom-combobox-input', function (e) {
+                $($(e.target).closest('.tt-form-input')).find('select.form-control').first().trigger('input');
+            })
+
+            //bookService form goes here
+
+            $("#bookServiceform").validator({
+                focus: false,
+                disable: false,
+            }).on('submit', function (e) {
+                //alert("ss")
+                if (e.isDefaultPrevented()) {
+
+                    toggleSwipperMovement(true);
+                    if (isDesktop) {
+                        if ($('.controls-footer-box:visible').length) {
+                            $('.controls-footer-box, .controls-box-spacer').slideUp();
+                        }
+                    } else {
+                        if ($('.controls-footer-box:visible').length) {
+
+                            $('.tt-forms').removeClass('review-bar-mobile');
+                            setTimeout(function () {
+                                $('.tt-forms .controls-footer-box').css('opacity', 0);
+                            }, 200);
+
+                        }
+
+                    }
+
+                    errorState = true;
+                    cfbFIx = true;
+
+                    $('.tt-form-input select.form-control').trigger('input');
+                    // updateErrorList();
+
+                    $('.controls-footer-box h4').text($('.controls-footer-box h4').attr('data-invalid'));
+                    $('.text-field-controls .btn-submit').text($('.text-field-controls .btn-submit').attr('data-invalid'));
+                    $('.error-details').slideDown();
+
+                    if ($('.text-field-controls .btn-submit').hasClass('processed-once')) {
+                        //console.log('clicked processed once');
+                        $('.tt-forms').removeClass('current-blur');
+                        swiper.slideTo(slidesWIthErrors[0]);
+                        if (isDesktop) {
+                            app.scrollToPos(0);
+                        } else {
+                            app.scrollToPos($('#content').offset().top);
+                        }
+                    }
+
+
+                } else {
+
+
+                    submitFinal = true;
+
+                    if (isDesktop) {
+                        if (!$('.controls-footer-box:visible').length) {
+                            $('.controls-footer-box, .controls-box-spacer').slideDown();
+                        }
+                        if (errorState) {
+
+                            $('.tt-forms').addClass('current-blur');
+                            swiper.slideTo(swiperLen - 1)
+
+                            if ($('.footer-cols:visible').length) {
+                                app.scrollToPos(($('.footer-cols').offset().top + 60) - $(window).height());
+                            } else {
+                                app.scrollToPos(($(document).height() + 60) - $(window).height());
+                            }
+
+                            $('.error-details').hide();
+                            lastPaneSubmitStage();
+                            setTimeout(function () {
+                                $('.controls-footer-box .btn-submit').focus();
+                            }, 800);
+
+                            toggleSwipperMovement(false);
+
+                            errorState = false;
+                            submitFinal = true;
+                        } else {
+                            if (noErrorsFirstTime) {
+                                submitFinal = true;
+                            } else {
+                                submitFinal = false;
+                            }
+                        }
+                    } else {
+                        submitFinal = false;
+                    }
+
+                    if (submitFinal) {
+                        return false;
+                    } else {
+                        e.preventDefault();
+                        // $.blockUI({ message: '<div class="spinner"> <div class="dot1"></div><div class="dot2"></div></div>' });
+                        var googleId = "";
+                        if (typeof ga !== 'undefined') {
+                            if (typeof googleId !== 'undefined') {
+                                googleId = ga.getAll()[0].get('clientId');
+                            }
+                        }
+                        $("#bookServiceformdiv button").attr("disabled", true);
+                        $(".hide-submit").show();
+                        $.ajax({
+                            url: "/api/feature/forms/SendCustomerBookServiceData",
+                            cache: false,
+                            type: "POST",
+                            data: {
+                                Vehicle: $('#car-model-select2').closest('.form-group').find('.custom-combobox-input').val(),
+                                VehicleModelYear: $('.car-year-combobox').closest('.form-group').find('.custom-combobox-input').val(),
+                                FirstName: $('#fname').val(),
+                                LastName: $('#surname').val(),
+                                PhoneNumber: $('#phone').val(),
+                                Email: $('#email').val(),
+                                City: $('#city-select2').closest('.form-group').find('.custom-combobox-input').val(),
+                                Centre: $('#center-select2').closest('.form-group').find('.custom-combobox-input').val(),
+                                AppointmentType: $('input[name=radio-appointmentType]:checked').val(),
+                                PreferredServiceDate: $("#serviceDate").val(),
+                                PreferredTime: $('input[name=radio-prefertime]:checked').val(),
+                                ExtraInfo: $("#extraInfo").val(),
+                                MessageType: $('#messagetype').val(),
+                                MessageSource: $('#messagesource').val(),
+                                GoogleID: googleId,
+                                RecaptchaResponse: grecaptchaResponse
+                            },
+                            success: function (data) {
+                                // console.log("book-service data", data);
+                                //dataLayer
+                                $("#bookServiceformdiv button").attr("disabled", false);
+                                $(".hide-submit").hide();
+                                dataLayer.push({ 'language': toyotaforms.culture });
+                                dataLayer.push({ 'modelYear': $('.car-year-combobox').closest('.form-group').find('.custom-combobox-input').val() });
+                                dataLayer.push({ 'vehicleName': $('#car-model-select2').closest('.form-group').find('.custom-combobox-input').val() });
+                                dataLayer.push({ 'appointmentType': $('input[name=radio-appointmentType]:checked').val() });
+                                dataLayer.push({ 'cityName': $('#city-select2').closest('.form-group').find('.custom-combobox-input').val() });
+                                dataLayer.push({ 'centerName': $('#center-select2').closest('.form-group').find('.custom-combobox-input').val() });
+                                dataLayer.push({ 'preferredDate': $("#serviceDate").val() });
+                                dataLayer.push({ 'preferredTime': $('input[name=radio-prefertime]:checked').val() });
+                                dataLayer.push({ 'customerID': googleId });
+                                dataLayer.push({ 'event': 'bookServiceConfirmation' });
+                                //
+
+                                // $.unblockUI();
+                                if (data && data.success) {
+                                    $('#bookServiceformerror').hide()
+                                    $('#bookServiceformdiv').hide();
+                                    $('#bookServiceformsuccess').show();
+                                } else {
+                                    $('#bookServiceformsuccess').hide();
+                                    $('#bookServiceformdiv').hide();
+                                    $('#bookServiceformerror').show();
+                                    // console.log("Send Book a service data failed to save!.");
+                                }
+                                $(window).scrollTop(0);
+                            },
+                            error: function (xhr, ajaxOptions, thrownError) {
+                                // $.unblockUI();
+                                $("#bookServiceformdiv button").attr("disabled", false);
+                                $(".hide-submit").hide();
+                                $(window).scrollTop(0);
+                                console.log(thrownError);
+                                console.log(ajaxOptions);
+                                //console.log("Send Book a service data AJAX Call Failed.");
+                            }
+                        });
+                    }
+
+                }
+            });
+
+
+
+
+            //
+
+        },
+
+        changeCarModel: function (event) {
+
+            var val, el = $(event.target).closest('.form-group').find('.car-model-combobox');
+            val = el.val();
+            var targetdiv = $(event.target).closest('.form-group').find('.car-selected-block')
+            el.trigger('input');
+            if (val != "") {
+                $.ajax({
+                    url: "/api/feature/forms/getvehicle",
+                    cache: false,
+                    data: {
+                        vehicleID: val,
+                        isSalesForm: $('#car-grade-select2').length > 0 ? true : false
+                    },
+                    success: function (data) {
+                        console.log(data);
+                        $('#vehicle-detail').html('');
+                        $('#selected-vehicle-detail').html('');
+                        if (data) {
+                            $('#vehicle-detail').html(data);
+                            $('#selected-vehicle-detail').html(data);
+                            $('#vehicle-detail #notes').text($('#vehicle-detail').data('notes'));
+                            targetdiv.addClass('visible');
+                            //  var $options = $("#selected-car-grade > option").clone();
+                            $('#car-grade-select2').parent().find('.custom-combobox-input').val('')
+                            $('#car-grade-select2').html();
+                            $('#car-grade-select2').html($("#selected-car-grade").html());
+                            $(".car-grade-combobox").combobox({
+                                select: function (event, ui) {
+                                    // toyotaforms.changeCarModel(event);
+                                }
+                            });
+                            $('.car-grade-combobox.has-placeholder').each(function () {
+                                $(this).parent().find('.custom-combobox-input').attr('placeholder', $(this).attr('placeholder'));
+                            });
+                        }
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        console.log("Vehicle Detail AJAX Call Failed.");
+                    }
+                });
+
+            } else {
+                targetdiv.removeClass('visible');
+            }
+        },
+        changeCenterList: function (event) {
+            if ($("#bookServiceformdiv").length > 0) {
+                var val, el = $(event.target).closest('.form-group').find('.car-city-combobox');
+                val = el.val();
+                var targetdiv = $(event.target).closest('.form-group').find('.car-selected-block')
+                el.trigger('input');
+                if (val != "") {
+                    $.ajax({
+                        url: "/api/feature/forms/GetCenter",
+                        cache: false,
+                        data: {
+                            cityID: val
+                        },
+                        success: function (data) {
+                            console.log("centerList goes here", data);
+
+                            if (data) {
+                                var items = "";
+                                $.each(data.CenterList, function (i, value) {
+                                    items += '<option value="' + value.CenterName + '">' + value.CenterName + '</option>';
+                                });
+                                $(".car-center-combobox").html(items);
+
+                                $(".car-center-combobox").combobox({
+
+                                    select: function (event, ui) {
+                                        // toyotaforms.changeCarModel(event);
+                                    }
+                                });
+                                $('.car-center-combobox.has-placeholder').each(function () {
+                                    $(this).parent().find('.custom-combobox-input').attr('placeholder', $(this).attr('placeholder'));
+                                });
+
+                                $('.car-center-combobox').next('.custom-combobox').find('.custom-combobox-input').val("");
+                            }
+                        },
+                        error: function (xhr, ajaxOptions, thrownError) {
+                            console.log(xhr);
+                            console.log(thrownError);
+                            console.log("Get Center AJAX Call Failed.");
+                        }
+                    });
+
+                } else {
+                    targetdiv.removeClass('visible');
+                }
+            }
+
+        },
+        changeCarModelYear: function (event) {
+            // alert($('#city-select2').closest('.form-group').find('.custom-combobox-input').val());
+            //var vehcilesList = [
+            //    {
+            //        "ModelYear": "2008",
+            //        "ModelNameList": ["test1", "test2"],
+            //    },
+            //    {
+            //        "ModelYear": "2012",
+            //        "ModelNameList": ["test3", "test4"],
+            //    }
+            //];
+            var vehcilesList = window.VehcilesList;
+            var modelNameList = "";
+
+            console.log(vehcilesList)
+            var val, el = $(event.target).closest('.form-group').find('.car-year-combobox');
+            val = el.val();
+            var targetdiv = $(event.target).closest('.form-group').find('.car-selected-block')
+            el.trigger('input');
+            if (val != "") {
+                //alert(val);
+                $.each(vehcilesList, function (i, value) {
+                    if (value.ModelYear == val) {
+                        modelNameList = value.ModelNameList;
+                    }
+                });
+                var items = "";
+                $.each(modelNameList, function (i, value) {
+                    items += '<option value="' + value + '">' + value + '</option>';
+                });
+                //console.log(items);
+                $(".car-model-combobox").html(items);
+
+                $(".car-model-combobox").combobox({
+
+                    select: function (event, ui) {
+
+                    }
+                });
+                $('.car-model-combobox.has-placeholder').each(function () {
+                    $(this).parent().find('.custom-combobox-input').attr('placeholder', $(this).attr('placeholder'));
+                });
+
+                $('.car-model-combobox').next('.custom-combobox').find('.custom-combobox-input').val("");
+
+            } else {
+                targetdiv.removeClass('visible');
+            }
+
+
+        },
+        init: function () {
+
+            toyotaforms.initBookTestDrive();
+            //if (!$(".car-model-combobox").length)
+            //    return false;
+
+            $(".car-model-combobox").combobox({
+                select: function (event, ui) {
+                    var val, el = $(event.target).closest('.form-group').find('.select-combobox');
+                    val = el.val();
+                    el.trigger('input');
+                    if (val != "") {
+                        $(event.target).closest('.form-group').find('.car-selected-block').addClass('visible');
+                        $(event.target).closest('.swiper-slide').addClass('show-btns');
+
+                    } else {
+                        $(event.target).closest('.form-group').find('.car-selected-block').removeClass('visible');
+                        $(event.target).closest('.swiper-slide').removeClass('show-btns');
+
+                    }
+                    toyotaforms.changeCarModel(event);
+                }
+            });
+            $('.car-model-combobox.has-placeholder').each(function () {
+                $(this).parent().find('.custom-combobox-input').attr('placeholder', $(this).attr('placeholder'));
+            });
+            $(".car-year-combobox").combobox({
+                select: function (event, ui) {
+
+                    var val, el = $(event.target).closest('.form-group').find('.select-combobox');
+                    val = el.val();
+                    el.trigger('input');
+                    if (val != "") {
+                        $(event.target).closest('.form-group').find('.car-selected-block').addClass('visible');
+                        $(event.target).closest('.swiper-slide').addClass('show-btns');
+
+                    } else {
+                        $(event.target).closest('.form-group').find('.car-selected-block').removeClass('visible');
+                        $(event.target).closest('.swiper-slide').removeClass('show-btns');
+
+                    }
+                    toyotaforms.changeCarModelYear(event);
+                }
+            });
+            $('.car-year-combobox.has-placeholder').each(function () {
+                $(this).parent().find('.custom-combobox-input').attr('placeholder', $(this).attr('placeholder'));
+            });
+            $(".car-grade-combobox").combobox({
+                select: function (event, ui) {
+                    // toyotaforms.changeCarModel(event);
+                }
+            });
+            $('.car-grade-combobox.has-placeholder').each(function () {
+                $(this).parent().find('.custom-combobox-input').attr('placeholder', $(this).attr('placeholder'));
+            });
+
+            if ($(".car-city-combobox").length > 0) {
+                $(".car-city-combobox").combobox({
+                    select: function (event, ui) {
+                        var val, el = $(event.target).closest('.form-group').find('.select-combobox');
+                        val = el.val();
+                        el.trigger('input');
+                        if (val != "") {
+
+                            $(event.target).closest('.swiper-slide').addClass('show-btns');
+
+                        } else {
+
+                            $(event.target).closest('.swiper-slide').removeClass('show-btns');
+
+                        }
+
+                        toyotaforms.changeCenterList(event);
+                    }
+                });
+                $('.car-city-combobox.has-placeholder').each(function () {
+                    $(this).parent().find('.custom-combobox-input').attr('placeholder', $(this).attr('placeholder'));
+                });
+            }
+            if ($(".car-center-combobox").length > 0) {
+                $(".car-center-combobox").combobox({
+                    select: function (event, ui) {
+                        var val, el = $(event.target).closest('.form-group').find('.select-combobox');
+                        val = el.val();
+                        el.trigger('input');
+                        if (val != "") {
+
+                            $(event.target).closest('.swiper-slide').addClass('show-btns');
+
+                        } else {
+
+                            $(event.target).closest('.swiper-slide').removeClass('show-btns');
+
+                        }
+                    }
+                });
+                $('.car-center-combobox.has-placeholder').each(function () {
+                    $(this).parent().find('.custom-combobox-input').attr('placeholder', $(this).attr('placeholder'));
+                });
+            }
+
+            this.UpdateNumber();
+            this.SelectedVehicle();
+
+
+            //GTM TRIGGERS
+            $(".gtm-genuine-parts").on('click', function () {
+
+                dataLayer.push({ 'language': toyotaforms.culture });
+                dataLayer.push({ 'event': 'parts' });
+            });
+
+            $(".tt-video-gallery .cursor-pointer").on('click', function () {
+                //dataLayer.push({ 'language': $("html").attr("lang") });
+                //dataLayer.push({ 'event': 'play' });
+                //dataLayer.push({ 'videoName': $(".model-gallery-sec h3.title ").text() });
+
+
+                dataLayer.push({ 'event': 'play', 'language': $("html").attr("lang"), 'videoName': $(".model-gallery-sec h3.title ").text() });
+            });
+
+            $(".tt-video-gallery .vbox-item").on('click', function () {
+                //dataLayer.push({ 'language': $("html").attr("lang") });
+                //dataLayer.push({ 'event': 'play' });
+                //dataLayer.push({ 'videoName': $(this).children(".title-bar").children(".tt-ttl").text() });
+
+                dataLayer.push({ 'event': 'play', 'language': $("html").attr("lang"), 'videoName': $(this).children(".title-bar").children(".tt-ttl").text() });
+            });
+
+            $(".video-box.vbox-item").on('click', function () {
+                //dataLayer.push({ 'language': $("html").attr("lang") });
+                //dataLayer.push({ 'event': 'play' });
+                //dataLayer.push({ 'videoName': $(this).children(".title-bar").children(".tt-ttl").text() });
+
+                dataLayer.push({ 'event': 'play', 'language': $("html").attr("lang"), 'videoName': $(this).children(".title-bar").children(".tt-ttl").text() });
+
+            });
+
+
+            $(document).on('click', ".loc-directions .btn", function () {
+
+                var selectedFilterCat = $("#category-filters-container1 .form-check-input:checked").val();
+                if (!selectedFilterCat) {
+                    selectedFilterCat = "";
+                }
+
+                //dataLayer.push({ 'language': toyotaforms.culture });
+                //dataLayer.push({ 'event': 'findCenter' });
+                //dataLayer.push({ 'searchType': selectedFilterCat });
+                //dataLayer.push({ 'centerName': $(this).parents(".list-details").prev(".tt-heading-box").children(".loc-name").text() });
+                dataLayer.push({
+                    'event': 'findCenter', 'language': toyotaforms.culture, 'searchType': selectedFilterCat, 'centerName': $(this).parents(".list-details").prev(".tt-heading-box").children(".loc-name").text()
+                });
+            });
+
+
+            //$(document).on("click", ".tt-page-videoplaylist .tab-pane .vbox-item", function () {
+            //    var videoName = $(this).children(".title-bar").children(".tt-ttl").text();
+            //    dataLayer.push({ 'language': toyotaforms.culture });
+            //    dataLayer.push({ 'event': 'play' });
+            //    dataLayer.push({ 'videoName': videoName });
+            //    alert(videoName);
+            //});
+        },
+        UpdateNumber: function () {
+            $('.swiper-slide label>span.numcount').each(function (i, element) {
+                $(this).text((i + 1) + '. ');
+            });
+        },
+        SelectedVehicle: function () {
+            if ($('#vehicleselection').val() != '') {
+                $('#selected-vehicle-detail').html($('#vehicle-detail').html());
+                $('#vehicle-detail #notes').text($('#vehicle-detail').data('notes'));
+                $('.car-selected-block').addClass('visible');
+                $('.car-model-combobox').closest('.swiper-slide').addClass('show-btns');
+                //var $options = $("#selected-car-grade > option").clone();
+                $('#car-grade-select2').html();
+                $('#car-grade-select2').html($("#selected-car-grade").html());
+                $(".car-grade-combobox").combobox({
+                    select: function (event, ui) {
+                        // toyotaforms.changeCarModel(event);
+                    }
+                });
+                $('.car-grade-combobox.has-placeholder').each(function () {
+                    $(this).parent().find('.custom-combobox-input').attr('placeholder', $(this).attr('placeholder'));
+                });
+            }
+        },
+    }
+    window.toyotaforms = toyotaforms;
+})
+    (window, document, jQuery);
+$(document).ready(function () {
+    toyotaforms.init();
+    if (app.windowWidth <= 767) {
+        $('.tt-forms .swiper-container').height($(window).height() - 174)
+    }
+
+    // limit autocomoplete options on forms
+    if ($('.tt-forms').length) {
+        var optionHeight = 47,
+            limit = 4;
+        app.$body.addClass('dropdown-limit');
+        $('.ui-autocomplete').css('max-height', limit * optionHeight);
+    }
+
+    $('.tt-forms .custom-combobox-input').attr('tabindex', '-1');
+
+});
+
+var grecaptchaResponse;
+var correctCaptcha = function (response) {
+    console.log(response);
+    grecaptchaResponse = response;
+    $('.continue-btn').removeClass('disabled')
+}

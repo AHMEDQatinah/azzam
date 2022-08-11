@@ -1,0 +1,333 @@
+﻿var latitude;
+var longitude;
+var GeoCodeCalc = {};
+GeoCodeCalc.EarthRadius = 3956.0;
+
+var SearchResults = SearchResults || {};
+var VehiclesResults = [];
+var BranchesResults = [];
+var OffersResults = [];
+var ArticlesResults = [];
+var OthersResults = [];
+var SearchCounts = [];
+var activeLang = getCookie("toyota#lang");
+if (!activeLang) {
+    activeLang = "en";
+}
+
+function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}
+
+$(".image-box").each(function () {
+    if ($(this).attr("href") == "javascript:void(0)") {
+        $(this).css("cursor", "initial");
+    }
+});
+
+SearchResults.API = {
+
+    allResultTemplateVehicle: $("#allSearchTemplateVehicle"),
+    allResultTemplateBranch: $("#allSearchTemplateBranch"),
+    allResultTemplateOffer: $("#allSearchTemplateOffer"),
+    allResultTemplateArticle: $("#allSearchTemplateArticle"),
+    allResultTemplateOther: $("#allSearchTemplateOther"),
+    carFilterSearchTemplate: $("#carFilterSearchTemplate"),
+    articleFilterSearchTemplate: $("#articleFilterSearchTemplate"),
+    offerFilterSearchTemplate: $("#offerFilterSearchTemplate"),
+    branchFilterSearchTemplate: $("#branchFilterSearchTemplate"),
+    otherFilterSearchTemplate: $("#otherFilterSearchTemplate"),
+    desktopCount: $("#desktopCount"),
+
+    getSearchResult: function (q) {
+        $('.loader').css('display', 'flex');
+        $.ajax({
+            url: '/api/feature/SearchFilter/GetSearchResults?q=' + q + '&lang=' + activeLang,
+            method: "GET",
+            success: function (response) {
+                SearchResponse = response;
+                if (response.success) {
+
+
+                    VehiclesResults = SearchResponse.vehicles;
+                    BranchesResults = SearchResponse.branches;
+                    OffersResults = SearchResponse.offers;
+                    ArticlesResults = SearchResponse.articles;
+                    OthersResults = SearchResponse.others;
+
+                    //ALL SEARCH TAB
+                    $("#appendAllSearch").html("");
+                    $("#appendFilteredVehicles").html("");
+                    $("#appendBranchesSearch").html("");
+                    $(".filtered-article-container").html("");
+                    $(".filtered-offer-container").html("");
+                    $("#appendOtherSearch").html("");
+
+                    var templateVehicle = SearchResults.API.allResultTemplateVehicle.html();
+                    var templateBranch = SearchResults.API.allResultTemplateBranch.html();
+                    var templateOffer = SearchResults.API.allResultTemplateOffer.html();
+                    var templateArticle = SearchResults.API.allResultTemplateArticle.html();
+                    var templateOthers = SearchResults.API.allResultTemplateOther.html();
+
+                    var desktopCount = SearchResults.API.desktopCount.html();
+                    var mobileCount = $("#mobileCount").html();
+                    //FILTERED TABS
+                    var templateFilterVehicle = SearchResults.API.carFilterSearchTemplate.html();
+                    var templateFilterArticle = SearchResults.API.articleFilterSearchTemplate.html();
+                    var templateFilterOffer = SearchResults.API.offerFilterSearchTemplate.html();
+                    var templateFilterBranch = SearchResults.API.branchFilterSearchTemplate.html();
+                    var templateFilterOther = SearchResults.API.otherFilterSearchTemplate.html();
+
+
+
+
+                    SearchCounts.vehicles = VehiclesResults.length;
+                    SearchCounts.branches = BranchesResults.length;
+                    SearchCounts.offers = OffersResults.length;
+                    SearchCounts.articles = ArticlesResults.length;
+                    SearchCounts.others = OthersResults.length;
+                    SearchCounts.all = VehiclesResults.length + BranchesResults.length + OffersResults.length + ArticlesResults.length + OthersResults.length;
+                    SearchCounts.Page = SearchResponse.PageNumber;
+                    SearchCounts.PageSize = SearchResponse.Pagezise;
+
+                    if (SearchCounts.all == 0) {
+                        SearchCounts.vehicles = 0;
+                        SearchCounts.branches = 0;
+                        SearchCounts.offers = 0;
+                        SearchCounts.articles = 0;
+                        SearchCounts.all = 0;
+                        SearchCounts.others = 0;
+                        $(".no-results").removeClass("d-none");
+                        var renderCountsE = Mustache.to_html(desktopCount, SearchCounts);
+                        var renderCountsMobileE = Mustache.to_html(mobileCount, SearchCounts);
+                        $(".search-categories-listing").html("");
+                        $(".search-categories-listing").append(renderCountsE);
+                        $("#mobile-count").html("");
+                        $("#mobile-count").append(renderCountsMobileE);
+
+
+
+                    }
+                    else {
+                        $(".no-results").addClass("d-none");
+                        var renderCounts = Mustache.to_html(desktopCount, SearchCounts);
+                        var renderCountsMobile = Mustache.to_html(mobileCount, SearchCounts);
+                        $(".search-categories-listing").html("");
+                        $(".search-categories-listing").append(renderCounts);
+                        $("#mobile-count").html("");
+                        $("#mobile-count").append(renderCountsMobile);
+
+                        if (VehiclesResults.length > 0) {
+                            for (var i = 0; i < VehiclesResults.length; i++) {
+                                var renderAllVehicles = Mustache.to_html(templateVehicle, VehiclesResults[i]);
+                                $("#appendAllSearch").append(renderAllVehicles);
+                                $('.search-page-result').sort(function (a, b) {
+                                    return $(b).data('worth') - $(a).data('worth');
+                                }).appendTo('.search-page-results-listing');
+                                var renderFilteredVehicles = Mustache.to_html(templateFilterVehicle, VehiclesResults[i]);
+                                $("#appendFilteredVehicles").append(renderFilteredVehicles);
+                            }
+                        }
+
+                        if (ArticlesResults.length > 0) {
+                            for (var a = 0; a < ArticlesResults.length; a++) {
+                                var renderAllArticles = Mustache.to_html(templateArticle, ArticlesResults[a]);
+                                $("#appendAllSearch").append(renderAllArticles);
+                                $('.search-page-result').sort(function (a, b) {
+                                    return $(b).data('worth') - $(a).data('worth');
+                                }).appendTo('.search-page-results-listing');
+                                var renderFilteredArticles = Mustache.to_html(templateFilterArticle, ArticlesResults[a]);
+                                $(".filtered-article-container").append(renderFilteredArticles);
+                            }
+                        }
+
+                        if (BranchesResults.length > 0) {
+                            for (var b = 0; b < BranchesResults.length; b++) {
+                                var renderAllBranches = Mustache.to_html(templateBranch, BranchesResults[b]);
+                                $("#appendAllSearch").append(renderAllBranches);
+                                $('.search-page-result').sort(function (a, b) {
+                                    return $(b).data('worth') - $(a).data('worth');
+                                }).appendTo('.search-page-results-listing');
+
+                                var distance = calcD(BranchesResults[b].Latitude, BranchesResults[b].Longitude);
+                                distance = distance.toFixed(1);
+                                BranchesResults[b].dist = distance;
+                                var renderFilteredBranches = Mustache.to_html(templateFilterBranch, BranchesResults[b]);
+                                $("#appendBranchesSearch").append(renderFilteredBranches);
+                            }
+                        }
+
+                        if (OffersResults.length > 0) {
+                            for (var o = 0; o < OffersResults.length; o++) {
+                                var renderAllOffers = Mustache.to_html(templateOffer, OffersResults[o]);
+                                $("#appendAllSearch").append(renderAllOffers);
+                                $('.search-page-result').sort(function (a, b) {
+                                    return $(b).data('worth') - $(a).data('worth');
+                                }).appendTo('.search-page-results-listing');
+                                var renderFilteredOffers = Mustache.to_html(templateFilterOffer, OffersResults[o]);
+                                $(".filtered-offer-container").append(renderFilteredOffers);
+                            }
+                        }
+
+                        if (OthersResults.length > 0)
+                        {
+                            for (var t = 0; t < OthersResults.length; t++) {
+                                var renderAllOthers = Mustache.to_html(templateOthers, OthersResults[t]);
+                                $("#appendAllSearch").append(renderAllOthers);
+                                $('.search-page-result').sort(function (a, b) {
+                                    return $(b).data('worth') - $(a).data('worth');
+                                }).appendTo('.search-page-results-listing');
+								
+                                var renderFilteredOthers = Mustache.to_html(templateFilterOther, OthersResults[t]);
+                                $("#appendOtherSearch").append(renderFilteredOthers);
+                            }
+                        }
+                        
+
+                        
+                    }
+
+                    if ($('#all-search').is(":visible")) {
+                        $('#all-search-link').parent().addClass('active');
+                        $('a[data-link="all-search-link"]').addClass('active');
+                    }
+                    else if ($('#cars-search').is(':visible')) {
+                        $('#car-search-link').parent().addClass('active');
+                        $('a[data-link="car-search-link"]').addClass('active');
+                    }
+                    else if ($('#offers-search').is(':visible')) {
+                        $('#offers-search-link').parent().addClass('active');
+                        $('a[data-link="offers-search-link"]').addClass('active');
+                    }
+                    else if ($('#articles-search').is(':visible')) {
+                        $('#articles-search-link').parent().addClass('active');
+                        $('a[data-link="articles-search-link"]').addClass('active');
+                    }
+
+                    else if ($('#others-search').is(':visible')) {
+                        $('#others-search-link').parent().addClass('active');
+                        $('a[data-link="others-search-link"]').addClass('active');
+                    }
+
+                    else {
+                        $('#branches-search-link').parent().addClass('active');
+                        $('a[data-link="branches-search-link"]').addClass('active');
+                    }
+
+                    $(".selected-link").text($("#mobile-count li a.active").text());
+                    $(".searchField").blur();
+
+                }
+                $('.loader').css('display', 'none');
+
+            },
+            error: function () {
+                console.log("error in search result js");
+                $('.loader').css('display', 'none');
+            }
+        });
+    },
+    init: function (q) {
+        this.getSearchResult(q);
+    }
+};
+
+$(document).ready(function () {
+   
+    if ($(".search-view-container").length > 0) {
+        get_location();
+        $(".searchField").keypress(function (event) {
+
+            if (event.keyCode === 13) {
+
+                event.preventDefault();
+                var q = $(".searchField").val();
+                SearchResults.API.init(q);
+            }
+        });
+
+        var searchedValue = new URL(window.location.href);
+        var qu = searchedValue.searchParams.get("q");
+        if (qu) {
+            $(".searchField").val(qu);
+            SearchResults.API.init(qu);
+            $(".selected-link").text($("#all-search-link").text());
+        }
+    }
+
+
+    $(document).on('click', '.collapsible-menu .menu-content ul li a', function (e) {
+        var linkClicked = $(this).data('link');
+        $('#' + linkClicked).click();
+        $('.collapsible-menu .selected .selected-link').text($(this).text());
+        $('.collapsible-menu input#menu').prop('checked', false);
+        $('.collapsible-menu .menu-content ul li a').removeClass('active');
+        $(this).addClass('active');
+        if ($('.collapsible-menu .selected .collapse-btn span').text() == collapseText) {
+            $('.collapsible-menu .selected .collapse-btn span').text(expandText);
+        }
+        else {
+            $('.collapsible-menu .selected .collapse-btn span').text(collapseText);
+        }
+    });
+    $(document).on('change', '.collapsible-menu input#menu', function () {
+        if (this.checked) {
+            $('.collapsible-menu .selected .collapse-btn span').text(collapseText);
+        }
+        else {
+            $('.collapsible-menu .selected .collapse-btn span').text(expandText);
+        }
+    });
+
+
+});
+
+
+function get_location() {
+
+    navigator.geolocation.getCurrentPosition(show_map);
+}
+
+function show_map(position) {
+    latitude = position.coords.latitude;
+    longitude = position.coords.longitude;
+}
+
+
+function geoCodeCalcToRadian(v) {
+    return v * (Math.PI / 180);
+
+}
+
+function geoCodeCalcDiffRadian(v1, v2) {
+    return this.geoCodeCalcToRadian(v2) - this.geoCodeCalcToRadian(v1);
+
+}
+
+function geoCodeCalcCalcDistance(lat1, lng1, lat2, lng2, radius) {
+
+
+    return radius * 2 * Math.asin(Math.min(1, Math.sqrt((Math.pow(Math.sin((this.geoCodeCalcDiffRadian(lat1, lat2)) / 2.0), 2.0) + Math.cos(this.geoCodeCalcToRadian(lat1)) * Math.cos(this.geoCodeCalcToRadian(lat2)) * Math.pow(Math.sin((this.geoCodeCalcDiffRadian(lng1, lng2)) / 2.0), 2.0)))));
+
+}
+
+function calcD(lat, long) {
+
+
+    var distance = geoCodeCalcCalcDistance(latitude, longitude, lat, long, GeoCodeCalc.EarthRadius);
+
+    return distance;
+
+}

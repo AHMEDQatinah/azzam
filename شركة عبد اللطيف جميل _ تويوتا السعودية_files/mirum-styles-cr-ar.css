@@ -1,0 +1,89 @@
+#content .btn {
+  margin-left: 15px;
+  margin-right: 0px;
+}
+
+/* LATEST VEHICLES */
+.tt-latest-models-box.Updated .tt-links-box li:first-child {
+  margin-left: 20px;
+  margin-right: 0;
+}
+.tt-latest-models-box.Updated .tt-links-box li:before {
+  background-image: url(../images/arrows/shape.svg);
+  transform: scaleX(-1);
+}
+
+/* ALL VEHICLES */
+.Update.car-listing-box .tt-car-item .tt-links-box li:before {
+  background-image: url(../images/arrows/shape.svg);
+  transform: scaleX(-1);
+}
+.Update.car-listing-box .tt-car-item .tt-links-box li:first-child {
+  margin-left: 20px;
+  margin-right: 0;
+}
+
+/* QUICK ACTIONS */
+.quick-actions-wrapper .actions-listing .action-item a:before {
+  background-image: url(../images/arrows/shape.svg);
+  transform: scaleX(-1);
+}
+
+.tt-content-hub.Updt .btn-content .link-arrow:before {
+  background-image: url(../images/arrows/shape.svg);
+  transform: scaleX(-1);
+}
+
+/*CONTACT US */
+.tt-offer-item.tt-get.Updt .content .btn-content a:before {
+  background-image: url(../images/arrows/shape.svg);
+  transform: scaleX(-1);
+}
+
+/* vehicle-listing-component-updt */
+#content .vehicle-listing-component-updt .tab-content-holder .tab-content .swiper-button-next {
+  letter-spacing: 1.5px;
+  left: 0px;
+  right: auto;
+  background: url(../images/arrows/carousel-arrow-black-l.svg) no-repeat center;
+}
+#content .vehicle-listing-component-updt .tab-content-holder .tab-content .swiper-button-prev {
+  letter-spacing: 1.5px;
+  left: auto;
+  right: 0px;
+  background: url(../images/arrows/carousel-arrow-black-r.svg) no-repeat center;
+}
+
+.feature-carousel-holder {
+  margin-bottom: 70px;
+}
+.feature-carousel-holder .vehicle-features-swiper .swiper-button-prev {
+  letter-spacing: 1.5px;
+  left: auto;
+  right: 40px;
+  background: url(../images/arrows/carousel-arrow-right.svg) no-repeat center;
+}
+.feature-carousel-holder .vehicle-features-swiper .swiper-button-next {
+  letter-spacing: 1.5px;
+  left: 40px;
+  right: auto;
+  background: url(../images/arrows/carousel-arrow-left.svg) no-repeat center;
+}
+
+.splash-screen.updt .tt-form-input .radio-strip .radio .form-type-holder p:before {
+  transform: scaleX(-1);
+}
+
+#content .inpage-nav-sec.Updt .inpage-nav .btn {
+  margin-right: 31px;
+}
+
+@media screen and (max-width: 767px) {
+  .tt-content-hub.Updt .btn-content {
+    left: unset;
+    right: 20px;
+    width: calc(100% - 40px);
+  }
+}
+
+/*# sourceMappingURL=mirum-styles-cr-ar.css.map */

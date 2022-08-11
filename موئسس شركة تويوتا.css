@@ -1,0 +1,341 @@
+body{
+    background-color: white;
+}
+.p1 {
+    width: 100%;
+    position: absolute;
+    bottom: 0px;
+    background-color: white;
+    text-align: right;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+}
+
+nav {
+    clear: both;
+    color: aliceblue;
+    background-color: #030020;
+    height: 60px;
+    padding-top: 35px;
+}
+
+nav ul {
+    margin: 0px;
+    padding: 5px 0px 5px 3px;
+    position: absolute;
+    right: 200px;
+}
+
+nav li {
+    font-family: myfont;
+    display: inline;
+    margin-right: 40px;
+
+}
+
+nav li a {
+    color: antiquewhite;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+nav li a:hover {
+    color: red;
+}
+
+ .p4 {
+    width: 120px;
+    height: 100px;
+    position: absolute;
+    right: -100px;
+    top: -40px;
+}
+/*
+.section-2 {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 10rem 0;
+}
+
+.cards-container {
+    display: flex;
+    justify-content: space-evenly;
+    
+}
+
+.card {
+    width: 610px;
+    height: 30rem;
+    background: linear-gradient(#0b0755, #4b0044) no-repeat;
+    padding: 4px;
+    margin-top: -120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 1rem 1rem 1rem #000;
+    position: absolute;
+    transform: rotateY(20deg) skewX(-2deg);
+    transition: transform 0.5s, box-shadow 0.5s;
+}
+
+.card:hover {
+    transform: rotateY(20deg) skewX(-2deg) translateY(-2rem);
+    box-shadow: 2rem 2rem 2rem #000;
+}
+
+.card::before {
+    content: "";
+    height: 100%;
+    width: 1rem;
+    background: linear-gradient(#0b0755, #542850) no-repeat;
+    position: absolute;
+    top: 0;
+    left: -1rem;
+    transform: skewY(45deg);
+    transform-origin: right;
+    box-shadow: -0.1rem -0.1rem 0.1rem #000;
+}
+
+.card::after {
+    content: "";
+    width: 100%;
+    height: 1rem;
+    background: linear-gradient(#0b0755, #4b0044) no-repeat;
+    position: absolute;
+    top: -1rem;
+    left: 0;
+    transform: skewX(45deg);
+    transform-origin: bottom;
+    box-shadow: -0.1rem -0.1rem 0.1rem #000;
+}
+
+
+.card-name {
+    font-size: 3rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.5rem;
+    color: #111;
+    margin: 2rem 0;
+    text-shadow: 0.15rem 0.15rem 0.15rem #000;
+}
+
+.card-btn {
+    width: 70%;
+    background-color: #111;
+    color: #888;
+    border-radius: 5rem;
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: 0.2rem;
+    text-transform: capitalize;
+    border: none;
+    padding: 0.5rem 0;
+    cursor: pointer;
+    box-shadow: -0.2rem -0.2rem 0.2rem #000;
+}
+
+
+
+.section-3 {
+    background-color: #333;
+    padding: 5rem 0;
+}
+
+
+span {
+    color: wheat;
+}
+
+.card-img {
+   
+    border-radius: 50%;
+}
+
+h6{
+    padding-top: -30px;
+    font-size: 30px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #111;
+    margin: 2rem 0;
+    text-shadow: 0.15rem 0.15rem 0.15rem #000;
+} */
+
+.hr1{
+    background-color: rgb(140, 0, 0);
+    height: 6px;
+    width: 12%;
+    border-radius: 10px;
+    margin-top: 30px;
+}
+
+.q1{
+    text-align: center;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+.pr10{
+    font-size: 15px;
+    position: absolute;
+    right: 30%;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.w1{
+    width: 100%;
+    height: 450px;
+    margin-left: 10px;
+    margin-right: 5px;
+    position: absolute;
+    left: -10px;
+    top: 290px;
+}
+
+
+
+.h1{
+    background-color: rgb(240, 240, 240);
+    box-shadow: 5px 5px 5px rgba(33, 0, 0, 0.745);
+    margin-top: 580px;
+    margin-left: 15px;
+    width: 300px;
+    height: 350px;
+    border-radius: 10px;
+}
+
+.h1 p{
+    line-height: 1.7;
+}
+
+.h2{
+    background-color: rgb(240, 240, 240);
+    box-shadow: 5px 5px 5px rgba(33, 0, 0, 0.745);
+    margin-top: -369px;
+    margin-left: 490px;
+    width: 300px;
+    height: 350px;
+    border-radius: 10px;
+}
+
+.h2 p{
+    line-height: 1.7;
+}
+
+.h3{
+    background-color: rgb(240, 240, 240);
+    box-shadow: 5px 5px 5px rgba(33, 0, 0, 0.745);
+    margin-top: -380px;
+    margin-left: 950px;
+    width: 300px;
+    height: 350px;
+    border-radius: 10px;
+}
+
+.h3 p{
+    line-height: 1.7;
+}
+
+.hr2{
+    background-color: rgb(105, 0, 0);
+    position: absolute;
+    left: 100px;
+    top: 790px;
+    width: 8%;
+    height: 6px;
+    border-radius: 10px;
+}
+
+.hr3{
+    background-color: rgb(105, 0, 0);
+    position: absolute;
+    left: 580px;
+    top: 790px;
+    width: 8%;
+    height: 6px;
+    border-radius: 10px;
+}
+
+.hr4{
+    background-color: rgb(105, 0, 0);
+    position: absolute;
+    left: 1050px;
+    top: 790px;
+    width: 8%;
+    height: 6px;
+    border-radius: 10px;
+}
+
+.h9{
+    padding-top: 50px;
+    text-align: center;
+}
+
+.pr2{
+    padding: 10px;
+    font-size: 15px;
+}
+
+.vv1{
+    background-color: rgb(105, 0, 0);
+    margin-top: 70px;
+    width: 8%;
+    height: 6px;
+    border-radius: 10px;   
+}
+
+.h100{
+    text-align: center;
+}
+
+.pr20{
+    text-align: center;
+    font-size: 20px;
+}
+
+.nn1{
+    border-radius: 15px;
+    position: absolute;
+    left: 10%;
+}
+
+.tt1{
+   background-color: rgb(105, 0, 0); 
+   height: 6px;
+   width: 15%;
+   margin-top: 2000px;
+   border-radius: 15px;
+}
+
+.yy6{
+    text-align: center;
+}
+
+.cc1{
+    font-size: 15px;
+}
+
+.rr5{
+   width: 1262px;
+   position: absolute;
+   left: 0px;
+   right: 0px;
+}
+
+footer{
+    background-color:#030020;
+    position: absolute;
+    width: 100%;
+    right: 0px;
+    bottom: -2520px;
+    height: 47.5px;
+    text-shadow:3px 3px 3px #fff200;
+    text-align: center;
+    color: rgb(255, 255, 255);
+    font-size: 20px;
+    padding-top:10px;
+    padding-bottom:0px;
+    }

@@ -1,0 +1,989 @@
+﻿
+
+
+if (typeof arrowImageUrl !== "undefined" && arrowImageUrl != '') {
+    arrowImageUrl = '/Common/theme/images/arrows/menu-arrow-active@2x.png';
+}
+
+$(document).ready(function () {
+    function hasTouch() {
+        return 'ontouchstart' in document.documentElement
+               || navigator.maxTouchPoints > 0
+               || navigator.msMaxTouchPoints > 0;
+    }
+
+    if (hasTouch()) { // remove all :hover stylesheets
+        try { // prevent exception on browsers not supporting DOM styleSheets properly
+            for (var si in document.styleSheets) {
+                var styleSheet = document.styleSheets[si];
+                if (!styleSheet.rules) continue;
+
+                for (var ri = styleSheet.rules.length - 1; ri >= 0; ri--) {
+                    if (!styleSheet.rules[ri].selectorText) continue;
+
+                    if (styleSheet.rules[ri].selectorText.match(':hover')) {
+                        styleSheet.deleteRule(ri);
+                    }
+                }
+            }
+        } catch (ex) { }
+    }
+    $('.circleItem span').ellipsis({
+        row: 3
+    });
+    var vehiclesList = window.VehiclesList;
+    var recallVehicles = window.recallVehicles;
+    var FilterVehicles = [];
+    var windowHeight = $(window).height();
+    var windowWidth = $(window).width();
+    //console.log(recallVehicles)
+    if ($('.recallCampaignGetByVehivle').length > 0) {
+        PopulateVehicleModelYearRecall(recallVehicles);
+    }
+    else {
+        //through js get list of years
+        PopulateVehicleModelYear(vehiclesList);
+    }
+    $('.model-grade-container').hide()
+    $('.model-name-container').hide()
+
+    // console.log("list is here", vehiclesList)
+    $('.accordion-inner h4').on('click', function (e) {
+        if ($(this).siblings('.tt-content').children('.recall-campaign-form-holder').length > 0) {
+
+            $('.check-recalls-btn.check-by-vehicle').attr('disabled', 'disabled')
+            $('.check-recalls-btn.check-by-vin').attr('disabled', 'disabled')
+            $('.check-services-btn.check-by-vin').attr('disabled', 'disabled')
+            $('.check-services-btn.check-by-vin').attr('disabled', 'disabled')
+
+            ResetRecallSearch();
+
+
+
+
+        }
+
+        if ($(this).siblings('.tt-content').children('.service-prices-form-holder').length > 0) {
+            $('.accordion-results-display.service-prices .results-display-title').hide();
+            $('.accordion-results-display.service-prices .result-vehicle-name').hide();
+            $('.accordion-results-display.service-prices .vat-metioned-prices').hide();
+            $('.accordion-results-display.service-prices .service-prices-table').hide();
+        }
+
+        if ($('.service-prices-form-holder').length > 0 || $('.recall-campaign-form-holder').length > 0 || $('.tt-page-recallcampaigns').length > 0) {
+            $('body').addClass('dropdown-limit');
+        }
+
+    })
+
+
+
+    $(document).on('click', '.check-recalls-btn.check-by-vin', function (e) {
+        e.preventDefault();
+        var toggleContent = $(this).parent();
+
+        //do ajax call 
+        IsAllRecalls = false;
+        DataSource = $('input[name="vin-number-recalls-datasource"]').val();
+        VinNumber = $('input[name="vin-number"]').val();
+        VehicleName = "";
+        VehicleYear = "";
+        Count = 6;
+        PageNumber = 0;
+        ContainerToAppend = toggleContent;
+        localStorage.setItem("VinNumber", VinNumber);
+        localStorage.setItem("VehicleName", VehicleName);
+        localStorage.setItem("VehicleYear", VehicleYear);
+        // localStorage.setItem("ContainerToAppend", ContainerToAppend);
+        localStorage.setItem("DataSource", DataSource);
+        localStorage.setItem("AccordionToOpen", "vinAccordion");
+        recallCampaignsScrollInfinite = true;
+        ContainerToAppend.children('.accordion-results-display').children('.recalls-listing').html(" ")
+        InitializeRecallCampaigns(IsAllRecalls, DataSource, VinNumber, VehicleName, VehicleYear, PageNumber, Count)
+    })
+
+    $(document).on('click', '.check-recalls-btn.check-by-vehicle', function (e) {
+        e.preventDefault();
+        var toggleContent = $(this).parent();
+
+        //do ajax call 
+        IsAllRecalls = false;
+        DataSource = $('input[name="vehicle-recalls-datasource"]').val();
+        VinNumber = "";
+        //VehicleName = $(".vehicle-model").next('.custom-combobox').children('.custom-combobox-input').val();
+        //VehicleYear = $(".model-year").next('.custom-combobox').children('.custom-combobox-input').val();
+        Count = 6;
+        PageNumber = 0;
+        ContainerToAppend = toggleContent;
+        localStorage.setItem("VinNumber", VinNumber);
+        localStorage.setItem("VehicleName", VehicleName);
+        localStorage.setItem("VehicleYear", VehicleYear);
+        // localStorage.setItem("ContainerToAppend", ContainerToAppend);
+        localStorage.setItem("DataSource", DataSource);
+        localStorage.setItem("AccordionToOpen", "vehicleAccordion");
+        recallCampaignsScrollInfinite = true;
+        ContainerToAppend.children('.accordion-results-display').children('.recalls-listing').html(" ")
+        InitializeRecallCampaigns(IsAllRecalls, DataSource, VinNumber, VehicleName, VehicleYear, PageNumber, Count)
+    })
+
+    //Service Prices Scripts
+    $(document).on('click', '.check-services-btn', function (e) {
+        e.preventDefault();
+        var toggleContent = $(this).parent();
+        //do ajax call 
+        //on success do the following
+        $.ajax({
+            url: "/api/feature/forms/GetServiceCosts",
+            cache: false,
+            type: "GET",
+            data: {
+                VehicleModelYear: $(".model-year").next('.custom-combobox').children('.custom-combobox-input').val(),
+                VehicleModelGrade: $(".model-grade").next('.custom-combobox').children('.custom-combobox-input').val(),
+                VehicleModel: $(".vehicle-model").next('.custom-combobox').children('.custom-combobox-input').val(),
+                vinNumber: $(".vin-number-input").val()
+            },
+            success: function (data) {
+               // console.log(data)
+
+
+                var resultsDisplay = toggleContent.children('.accordion-results-display');
+                resultsDisplay.children('.service-prices-table').show();
+                resultsDisplay.children('.result-vehicle-name').show();
+                resultsDisplay.children('.vat-metioned-prices').show();
+                resultsDisplay.children('.results-display-title').show();
+                if ($(".rtl").length > 0) {
+                    resultsDisplay.children('.result-vehicle-name').html(data.VehicleDescAr);
+                }
+                else {
+                    resultsDisplay.children('.result-vehicle-name').html(data.VehicleDescEn);
+                }
+
+                var servicesListing = resultsDisplay.children('table.service-prices-table');
+
+                //var list = [
+                //    { Kilometers: 5000, ServiceCost: "SR 279" },
+                //    { Kilometers: 10000, ServiceCost: "SR 671" },
+                //    { Kilometers: 20000, ServiceCost: "SR 990" },
+                //    { Kilometers: 30000, ServiceCost: "SR 1500" },
+                //];
+                servicesListing.html('<thead><tr><td>' + data.KmTitle + '</td><td>' + data.ServiceTitle +'</td></tr></thead>')
+                servicesListing.children().not('thead').remove();
+                $.each(data.ServiceCostList, function (key, value) {
+                    var html = "";
+
+                    if (value.ServiceCost.length>1) {
+                        var priceHtml = "<ul>";
+                        $.each(value.ServiceCost, function (skey, svalue) {
+                            priceHtml += '<li><strong class="d-flex d-md-inline">' + svalue.TransmissionType + '</strong> ' + svalue.Cost + '</li>\n';
+                        });
+                        priceHtml += "</ul>";
+                        html = [
+                            '<tr>',
+                            '<td>' + value.Kilometers + '</td>',
+                            '<td>' + priceHtml+'</td>',
+                            '</tr>',
+                        ].join('\n');
+
+                    }
+                    else {
+                        html = [
+                            '<tr>',
+                            '<td>' + value.Kilometers + '</td>',
+                            '<td>' + value.ServiceCost[0].Cost + '</td>',
+                            '</tr>',
+                        ].join('\n');
+                    }
+                    servicesListing.append(html);
+                })
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+              //  console.log(xhr)
+//console.log(thrownError)
+               // console.log(ajaxOptions)
+            }
+        });
+
+    })
+
+
+
+    $(document).on('input', 'input[name="vin-number"]', function (e) {
+        var vinNumber = $(this).val();
+        var maxNumberOfCharacters = $(this).siblings('.letter-count-span').data('max-letters');
+
+        var border = $(this).siblings('.input-text-border')
+        var errorMessage = $(this).siblings('.error-message')
+
+        if (vinNumber.length == maxNumberOfCharacters) {
+            $('.check-recalls-btn.check-by-vin').removeAttr('disabled')
+            $('.check-services-btn.check-by-vin').removeAttr('disabled')
+            border.removeAttr('style')
+            errorMessage.css('display', 'none')
+        }
+        else {
+            $('.check-recalls-btn.check-by-vin').attr('disabled', 'disabled')
+            $('.check-services-btn.check-by-vin').attr('disabled', 'disabled')
+            border.css('background-color', '#d40618')
+            errorMessage.css('display', 'block')
+        }
+
+        $(this).siblings('.letter-count-span').text(vinNumber.length + '/' + maxNumberOfCharacters)
+    })
+
+    //FindYourMatch
+    if ($(".tt-page-findyourmatch").length > 0) {
+        var rtl = 0;
+        var filtersSelected = [];
+        var vehiclesList;
+        if ($(".rtl").length > 0) {
+            rtl = 1;
+        }
+
+        $.ajax({
+            url: "/api/feature/MobileApi/GetFindYourMatchFiltersApi",
+            cache: false,
+            type: "GET",
+            data: { lang: rtl, },
+            success: function (data) {
+              //  console.log(data);
+                if (data) {
+                    vehiclesList = data.VehiclesList;
+                    console.log("vehiclesList", vehiclesList)
+                }
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+             //   console.log(xhr)
+              //  console.log(thrownError)
+                //console.log(ajaxOptions)
+            },
+            complete: function () {
+                // $('.loader').css('display', 'none');
+            }
+        });
+        $(window).resize(function () {
+            windowWidth = $(window).width();
+            if (windowWidth > 767) {
+                var containerCategoriesHeight = $(".findYourMatchListing").outerHeight() + $(
+                    ".submitFindYourMatchContainer").outerHeight();
+                var containerHeight = $(".car-listing-box").outerHeight();
+                if ($(".car-listing-box").hasClass("visible")) {
+                    if (containerHeight >= containerCategoriesHeight) {
+                        $(".categoriesHolder").css("min-height", containerHeight + "px");
+
+                    } else {
+
+                        $(".categoriesHolder").css("min-height", containerCategoriesHeight + "px");
+                        $(".car-listing-box").css("min-height", containerCategoriesHeight + "px");
+                    }
+                }
+            }
+            else {
+
+                $('.circleItem span').ellipsis({
+                    row: 2
+                });
+            }
+        });
+        $(".circleHolder").on("click", function () {
+            // console.log("gray");
+            //debugger;
+            if (!$(this).hasClass("gray")) {
+                if ($(this).hasClass("active")) {
+                    var filterId = $(this).children(".circleItem").attr("data-filderId");
+                    var index = filtersSelected.indexOf(filterId);
+                    if (index !== -1) filtersSelected.splice(index, 1);
+                    $(this).removeClass("active");
+                    changeMatchList();
+                    //  console.log("filtersArray", filtersSelected);
+                } else {
+                    //debugger;
+                    $(this).addClass("active");
+                    var filterId = $(this).children(".circleItem").attr("data-filderId");
+                    filtersSelected.push(filterId);
+                    changeMatchList();
+                    // console.log("filtersArray", filtersSelected)
+                }
+            }
+
+        });
+        function changeMatchList() {
+            var FilterVehiclesToShow = [];
+            if (filtersSelected.length > 0) {
+                FilterVehicles = vehiclesList.filter(function(obj) {
+                    var isExist = true;
+                    $.each(filtersSelected, function (key, value) {
+                        if ((obj.FiltersList).indexOf(value) == -1) {
+                            isExist = false;
+                        }
+                    });
+                    return isExist;
+                    //if (anyMatchInArray(filtersSelected, obj.FiltersList)) {
+                    //    return true;
+                    //}
+                    // (obj.FiltersList).every(function (val) { return filtersSelected.indexOf(val) >= 0; });
+                });
+            }
+            else {
+                FilterVehicles = [];
+            }
+
+            //console.log("FilterVehicles", FilterVehicles);
+            $(".vehiclesListingContainer .vehicleItem").not(".vehicleObject").remove();
+            $.each(FilterVehicles, function (key, value) {
+                var vehicleObject = $(".vehicleObject").clone();
+                var orderOnlineUrl = value.OrderOnlineUrl;
+                $(vehicleObject).removeClass("vehicleObject");
+                $(vehicleObject).find(".title").children("h3").text(value.DesktopTitle);
+                $(vehicleObject).find(".front").prop("src", value.FrontImg);
+                $(vehicleObject).find(".hover").prop("src", value.HoverImg);
+                $(vehicleObject).find(".price-tag").children("h4").text(value.Price);
+                $(vehicleObject).find(".vehicleUrl").prop("href", value.VehicleUrl);
+                $(vehicleObject).find(".vehicleOrderOnlineUrl").prop("href", orderOnlineUrl);
+                $(vehicleObject).css("display", "inline-block");
+
+                if (value.HasAvailableOffer) {
+                    //$(vehicleObject).find(".offerAvailable").prop("href", value.AvailableOfferUrl);
+                    $(vehicleObject).find(".offerAvailable").css("display", "inline-block");
+                }
+                $(".vehiclesListingContainer").append(vehicleObject);
+                $.each(value.FiltersList, function (key, value) {
+                    FilterVehiclesToShow.push(value)
+                });
+                //  console.log("FilterVehiclesToShow", FilterVehiclesToShow)
+            });
+            if (FilterVehicles.length == 0) {
+
+                $(".submitFindYourMatch").addClass("no-result-state");
+                $(".submitFindYourMatch").prop('disabled', true);
+
+                $(".submitFindYourMatch").show();
+                if (rtl) {
+                    $(".submitFindYourMatch").text("ليس هناك نتائج");
+                }
+                else {
+                    $(".submitFindYourMatch").text("no matches");
+                }
+
+            }
+
+            else {
+
+                $(".submitFindYourMatch").removeClass("no-result-state");
+                $(".submitFindYourMatch").prop('disabled', false);
+                $(".submitFindYourMatch").show();
+                if (rtl) {
+                    $(".submitFindYourMatch").text("هناك " + FilterVehicles.length + " نتائج");
+                }
+                else {
+                    $(".submitFindYourMatch").text("view " + FilterVehicles.length + " matches");
+                }
+
+            }
+            if (rtl) {
+                $(".resultTitle").text("هناك " + FilterVehicles.length + " نتائج");
+            }
+            else {
+                $(".resultTitle").text("Your " + FilterVehicles.length + " matches");
+            }
+
+            $.each($(".circleItem"), function (key, value) {
+                var filterId = $(this).attr("data-filderId");
+                if (filtersSelected.length > 0 && FilterVehiclesToShow.indexOf(filterId) == -1) {
+                    if (!$(this).parent().hasClass("active")) {
+                        $(this).parent().addClass("gray");
+                    }
+                }
+                else {
+                    $(this).parent().removeClass("gray");
+                }
+
+            });
+        }
+        var anyMatchInArray = function (target, toMatch) {
+            "use strict";
+
+            var found, targetMap, i, j, cur;
+
+            found = false;
+            targetMap = {};
+
+            // Put all values in the `target` array into a map, where
+            //  the keys are the values from the array
+            for (i = 0, j = target.length; i < j; i++) {
+                cur = target[i];
+                targetMap[cur] = true;
+            }
+
+            // Loop over all items in the `toMatch` array and see if any of
+            //  their values are in the map from before
+            for (i = 0, j = toMatch.length; !found && (i < j) ; i++) {
+                cur = toMatch[i];
+                found = !!targetMap[cur];
+                // If found, `targetMap[cur]` will return true, otherwise it
+                //  will return `undefined`...that's what the `!!` is for
+            }
+
+            return found;
+        };
+
+        $(".submitFindYourMatch").on("click", function () {
+            if (FilterVehicles.length == 0) {
+                $(".submitFindYourMatch").prop('disabled', true);
+                $(".submitFindYourMatch").addClass("no-result-state");
+                if (rtl) {
+                    $(".submitFindYourMatch").text("ليس هناك نتائج");
+                }
+                else {
+                    $(".submitFindYourMatch").text("no matches");
+                }
+
+            }
+            else {
+                $(".submitFindYourMatch").removeClass("no-result-state");
+                $(".submitFindYourMatch").prop('disabled', false);
+                if (windowWidth > 767) {
+                    var containerCategoriesHeight = $(".findYourMatchListing").outerHeight() + $(".submitFindYourMatchContainer").outerHeight();
+                    var containerHeight = $(".car-listing-box").outerHeight();
+                    if (containerHeight >= containerCategoriesHeight) {
+                        $(".categoriesHolder").css("min-height", containerHeight + "px");
+                    } else {
+                        $(".categoriesHolder").css("min-height", containerCategoriesHeight + "px");
+                        $(".car-listing-box").css("min-height", containerCategoriesHeight + "px");
+                    }
+                }
+                $(".car-listing-box").addClass("visible");
+                $('html, body').animate({
+                    'scrollTop': $(".findYourMatchDiplayContainer").position().top - 250
+                }, 300);
+            }
+
+        });
+        $(".closeBtn").on("click", function () {
+            if (windowWidth > 767) {
+                var containerHeight = $(".findYourMatchListing ").outerHeight() + $(
+                    ".submitFindYourMatchContainer ").outerHeight();
+                $(".categoriesHolder").css("min-height", "auto");
+
+            }
+            $(".car-listing-box").removeClass("visible");
+        });
+        $(document).on("mouseover", ".tt-car-item", function () {
+            $(".tt-car-item").addClass('inactive');
+            $(this).removeClass('inactive');
+            $(this).addClass('active');
+        });
+        $(document).on("mouseleave", ".tt-car-item", function () {
+            $(".tt-car-item").removeClass('active');
+            $(".tt-car-item").removeClass('inactive')
+        });
+
+    }
+
+})
+
+$(window).on('load', function () {
+
+    //Check if in all recalls page
+    if (typeof isAtAllRecallCampaigns !== "undefined" && isAtAllRecallCampaigns && $('.all-recalls-container').length > 0) {
+        var allRecallCampaignsId = $('input[name="AllRecallCampaignsDataSource"]').val();
+        IsAllRecalls = true;
+        DataSource = allRecallCampaignsId;
+        VinNumber = "";
+        VehicleName = "";
+        VehicleYear = "";
+        Count = 8;
+        PageNumber = 0;
+        ContainerToAppend = $('.all-recalls-content');
+        InitializeRecallCampaigns(IsAllRecalls, DataSource, VinNumber, VehicleName, VehicleYear, PageNumber, Count);
+    }
+    else {
+        if (getQueryVariable("showResponse") == "true") {
+            var accordion = localStorage.getItem("AccordionToOpen")
+            //accordion.css('display', 'block')
+            IsAllRecalls = false;
+            DataSource = localStorage.getItem("DataSource");
+            VinNumber = localStorage.getItem("VinNumber");
+            VehicleName = localStorage.getItem("VehicleName")
+            VehicleYear = localStorage.getItem("VehicleYear")
+            Count = 6;
+            PageNumber = 0;
+            // ContainerToAppend ="";
+
+            if (VinNumber != "") {
+                $('input[name="vin-number"]').val(VinNumber);
+            }
+            else {
+                $(".model-year").next('.custom-combobox').children('.custom-combobox-input').val(VehicleYear);
+                PopulateVehicleModelsSelectRecall(recallVehicles, VehicleYear);
+                $(".vehicle-model").next('.custom-combobox').children('.custom-combobox-input').val(VehicleName);
+                $(".model-name-container").show();
+            }
+            if (accordion == "vinAccordion") {
+                $(".check-recalls-btn.check-by-vin").parent().parent().css('display', 'block');
+                $(".check-recalls-btn.check-by-vin").parent().parent().parent().addClass("expand");
+                $(".check-recalls-btn.check-by-vin").parent().parent().parent().children("h4").addClass("active");
+                $(".check-recalls-btn.check-by-vehicle").siblings(".accordion-results-display").hide();
+                ContainerToAppend = $(".check-recalls-btn.check-by-vin").parent();
+            }
+            else {
+                $(".check-recalls-btn.check-by-vehicle").parent().parent().css('display', 'block');
+                $(".check-recalls-btn.check-by-vehicle").parent().parent().parent().addClass("expand");
+                $(".check-recalls-btn.check-by-vehicle").parent().parent().parent().children("h4").addClass("active");
+                $(".check-recalls-btn.check-by-vin").siblings(".accordion-results-display").hide();
+                ContainerToAppend = $(".check-recalls-btn.check-by-vehicle").parent();
+            }
+            InitializeRecallCampaigns(IsAllRecalls, DataSource, VinNumber, VehicleName, VehicleYear, PageNumber, Count)
+        }
+    }
+
+    if ($('.search-results-specific-container').length > 0) {
+        $('.recall-campaign-form-holder .toggle-content-input-holder .details-title').css('display', 'block')
+    }
+
+    $(document).on('click', '.search-results-vin-number-container .recall-campaign-form-holder .check-recalls-btn.check-by-vin', function (e) {
+        e.preventDefault();
+        var vinNumber = $(this).siblings('.toggle-content-input-holder').children('input[name="vin-number"]');
+        var recallCampaignId = $('input[name="recall-campaign-id"]').val();
+        //if (recallCampaignsFolderDataSource && recallCampaignsFolderDataSource != '') {
+        //    recallCampaignId = recallCampaignsFolderDataSource
+        //}
+      //  console.log(vinNumber.val())
+       // console.log(recallCampaignId)
+        if (recallCampaignId && recallCampaignId != '') {
+            if (vinNumber.val() && vinNumber.val().length == 17) {
+                //check if vin number available 
+                $('.loader').css('display', 'flex');
+                $.ajax({
+                    url: "/api/feature/forms/CheckCurrentVinNumber?vinNumber=" + vinNumber.val() + "&recallCampaignId=" + recallCampaignId,
+                    cache: false,
+                    type: "GET",
+                    data: {},
+                    success: function (data) {
+                     //   console.log(data)
+                        if (data.Success) {
+                            if (data.IsIncluded) {
+                                //display success div
+                                $('.search-results-message-container.success-message-container').css('display', 'block')
+                                $('.search-results-message-container.error-message-container').css('display', 'none')
+                                $('.search-results-vin-number-container').css('display', 'none')
+                            }
+                            else {
+                                //display error div
+                                $('.search-results-message-container.success-message-container').css('display', 'none')
+                                $('.search-results-message-container.error-message-container').css('display', 'block')
+                                $('.search-results-vin-number-container').css('display', 'none')
+                            }
+                        }
+                        else {
+                            alert(data.Message)
+                        }
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                      //  console.log(xhr)
+                      //  console.log(thrownError)
+                      //  console.log(ajaxOptions)
+                    },
+                    complete: function () {
+                        $('.loader').css('display', 'none');
+                    }
+                });
+            }
+            else {
+                //display vin number error
+
+            }
+        }
+        else {
+            //display recall campaign error
+            alert('An error has occured. Please try again later');
+        }
+
+    });
+
+
+    $(document).on('click', '.view-more-recalls', function (e) {
+        e.preventDefault();
+        InitializeRecallCampaigns(IsAllRecalls, DataSource, VinNumber, VehicleName, VehicleYear, PageNumber, Count);
+    })
+
+    //Cehck if Recall Campaign is included in the details
+    var recallCampaignIsIncluded = $('input[name="recall-campaign-is-included"]')
+    if (recallCampaignIsIncluded.length > 0) {
+        if (recallCampaignIsIncluded.val()) {
+            if (recallCampaignIsIncluded.val().trim().toLowerCase() == "yes") {
+                //show success message
+                $('.search-results-message-container.success-message-container').css('display', 'block')
+                $('.search-results-message-container.error-message-container').css('display', 'none')
+                $('.search-results-vin-number-container').css('display', 'none')
+            }
+            else {
+                //show error message
+                $('.search-results-message-container.success-message-container').css('display', 'none')
+                $('.search-results-message-container.error-message-container').css('display', 'block')
+                $('.search-results-vin-number-container').css('display', 'none')
+            }
+        }
+    }
+
+    //Handle close button
+    $(document).on('click', '.close-success-message-btn-container .close-success-message-btn', function (e) {
+        e.preventDefault();
+        $('.search-results-message-container.success-message-container').css('display', 'none')
+        $('.search-results-message-container.error-message-container').css('display', 'none')
+        $('.search-results-vin-number-container').css('display', 'block')
+    })
+});
+
+//servicePrices
+function PopulateVehicleModelYear(vehiclesList) {
+   // console.log("vehiclesList", vehiclesList);
+    var select = $('select[name="model-year"]')
+    select.html('')
+    var option = document.createElement('option')
+    option.setAttribute('value', '')
+    option.innerHTML = ''
+    select.append(option)
+    // var years = vehicleYears.filter(item => item.ModelIds.indexOf(parseInt(selectedModelId)) >= 0)
+    if (vehiclesList) {
+        $.each(vehiclesList, function (key, value) {
+            var option = document.createElement('option')
+            option.setAttribute('value', value.ModelYear)
+            option.innerHTML = value.ModelYear
+            select.append(option)
+        })
+    }
+
+    select.combobox({
+        select: function (event, ui) {
+            // toyotaforms.changeCarModel(event);
+            var val = $(event.target).val();
+            // alert(val);
+            //$('.model-grade-container').show()
+            //$(".model-grade").next('.custom-combobox').children('.custom-combobox-input').val("");
+            //$(".vehicle-model").next('.custom-combobox').children('.custom-combobox-input').val("");
+            //$('select[name="model-grade"]').html('')
+            $('.model-name-container').show()
+            $(".model-grade").next('.custom-combobox').children('.custom-combobox-input').val("");
+            $(".vehicle-model").next('.custom-combobox').children('.custom-combobox-input').val("");
+            $('select[name="model-grade"]').html('')
+            PopulateVehicleModelsSelect(vehiclesList, val)
+        }
+    });
+}
+function PopulateVehicleModelsSelect(vehiclesList, selectedYear) {
+    var select = $('select[name="vehicle-model"]')
+    select.html('')
+    var option = document.createElement('option')
+    option.setAttribute('value', '')
+    option.innerHTML = ''
+    select.append(option);
+    var yearIndex = vehiclesList.filter(function(obj) {
+        return obj.ModelYear === selectedYear
+    })
+    //console.log(yearIndex[0].gradesList)
+    if (yearIndex) {
+        $.each(yearIndex[0].ModelsList, function (key, value) {
+
+            var option = document.createElement('option')
+            option.setAttribute('value', value.ModelName)
+            option.innerHTML = value.ModelName
+            select.append(option)
+        })
+    }
+
+
+    //$('select[name="vehicle-model"]').selectize();
+    select.combobox({
+        select: function (event, ui) {
+            //on change here
+            var val = $(event.target).val();
+
+            $('.check-recalls-btn.check-by-vehicle').removeAttr('disabled')
+            $('.check-services-btn.check-by-vehicle').removeAttr('disabled')
+            $('.model-grade-container').show()
+            $(".model-grade").next('.custom-combobox').children('.custom-combobox-input').val("");
+            $('select[name="model-grade"]').html('')
+            //$('.model-name-container').show()
+            //$('.model-year-container').show()
+            //$('select[name="model-year"]').html('')
+            PopulateVehicleGrades(yearIndex[0].ModelsList, val)
+        }
+    });
+}
+function PopulateVehicleGrades(modelList, model) {
+    //var year = selectedYear;
+    var select = $('select[name="model-grade"]')
+    select.html('')
+    var option = document.createElement('option')
+    option.setAttribute('value', '')
+    option.innerHTML = ''
+    select.append(option)
+
+    var gradeIndex = modelList.filter(function(obj) {
+        return obj.ModelName === model
+    })
+    //console.log("gradeIndex",gradeIndex);
+    $.each(gradeIndex[0].gradesList, function (key, value) {
+        var option = document.createElement('option')
+        option.setAttribute('value', value)
+        option.innerHTML = value
+        select.append(option)
+    })
+    select.combobox({
+        select: function (event, ui) {
+            // toyotaforms.changeCarModel(event);
+            var val = $(event.target).val();
+            //$('.model-name-container').show()
+            //$('select[name="vehicle-model"]').html('')
+            //$(".vehicle-model").next('.custom-combobox').children('.custom-combobox-input').val("");
+            //PopulateVehicleModelsSelect(yearIndex[0].gradesList, val)
+        }
+    });
+}
+//
+
+
+
+
+
+
+
+function PopulateVehicleModelYearRecall(vehicles) {
+    var select = $('select[name="model-year"]')
+    select.html('')
+    var option = document.createElement('option')
+    option.setAttribute('value', '')
+    option.innerHTML = ''
+    select.append(option)
+    // var years = vehicleYears.filter(item => item.ModelIds.indexOf(parseInt(selectedModelId)) >= 0)
+    if (vehicles) {
+        $.each(vehicles, function (key, value) {
+            var option = document.createElement('option')
+            option.setAttribute('value', value.ModelYear)
+            option.innerHTML = value.ModelYear
+            select.append(option)
+        })
+    }
+
+    select.combobox({
+        select: function (event, ui) {
+            recallCampaignsScrollInfinite = true;
+            var val = $(event.target).val();
+            VehicleYear = val;
+            $('.model-name-container').show()
+            $('select[name="vehicle-model"]').html('')
+            PopulateVehicleModelsSelectRecall(vehicles, val)
+        }
+    });
+}
+function PopulateVehicleModelsSelectRecall(vehicles, year) {
+    var select = $('select[name="vehicle-model"]')
+    select.html('')
+    var option = document.createElement('option')
+    option.setAttribute('value', '')
+    option.innerHTML = ''
+    select.append(option);
+    var yearIndex = vehicles.filter(function(obj) {
+        return obj.ModelYear === year
+    })
+   // console.log(yearIndex[0].ModelNameList)
+    if (yearIndex) {
+        $.each(yearIndex[0].ModelNameList, function (key, value) {
+
+            var option = document.createElement('option')
+            option.setAttribute('value', value)
+            option.innerHTML = value
+            select.append(option)
+        })
+    }
+
+
+    //$('select[name="vehicle-model"]').selectize();
+    select.combobox({
+        select: function (event, ui) {
+            //on change here
+            recallCampaignsScrollInfinite = true;
+            var val = $(event.target).val();
+            VehicleName = val;
+            $('.check-recalls-btn.check-by-vehicle').removeAttr('disabled')
+            $('.check-services-btn.check-by-vehicle').removeAttr('disabled')
+
+            //$('.model-year-container').show()
+            //$('select[name="model-year"]').html('')
+            //PopulateVehicleModelYear(val)
+        }
+    });
+}
+
+
+function ResetRecallSearch() {
+    $('.results-display-title').hide();
+    $('.recall-result-title').hide();
+    $('.result-vehicle-name').text('')
+    $('.recalls-listing').html('')
+    $('.results-display').hide();
+
+    $('.check-recalls-btn.check-by-vehicle').attr('disabled', 'disabled')
+    $('.check-services-btn.check-by-vehicle').attr('disabled', 'disabled')
+    $('.check-recalls-btn.check-by-vin').attr('disabled', 'disabled')
+    $('.check-services-btn.check-by-vin').attr('disabled', 'disabled')
+}
+
+
+function LoadRecallCampaigns(container, data) {
+    var toggleContent = container;
+    var resultsDisplay = toggleContent.children('.accordion-results-display');
+    resultsDisplay.show();
+    resultsDisplay.children('.result-vehicle-name').html('"' + data.VehicleName + '"')
+    var recallsListing = resultsDisplay.children('.recalls-listing')
+    //on success do the following
+    if (data.RecallCampaigns.length == 0) {
+        //if no recalls, show below
+        resultsDisplay.children('.recall-result-success').show();
+        resultsDisplay.children('.recall-result-error').hide();
+        recallsListing.hide();
+        resultsDisplay.children('.result-vehicle-name').hide();
+        resultsDisplay.children('.results-display-title').hide();
+    }
+    else {
+        //else if recalls show below
+        resultsDisplay.children('.recall-result-error').show();
+        resultsDisplay.children('.recall-result-success').hide();
+        recallsListing.show();
+
+        resultsDisplay.children('.result-vehicle-name').html(data.VehicleName);
+        resultsDisplay.children('.result-vehicle-name').show();
+        resultsDisplay.children('.results-display-title').show();
+
+        var recallList = [];
+        $.each(data.RecallCampaigns, function (key, value) {
+            recallList.push({
+                Url: value.Url,
+                Title: value.Title,
+                Description: value.Description,
+                Name: value.Name
+            })
+        })
+        //recallsListing.html('');
+        $.each(recallList, function (key, value) {
+            var urlRecall = value.Url + "?previousPage=" + window.location.href + "&vinNumber=" + VinNumber;
+            var html = [
+                '<a class="recall" href="' + urlRecall + '">',
+                    '<div class="recall-title">' + value.Title + '</div>',
+                    '<div class="recall-description">' + value.Description + '</div>',
+                    '<img src="' + arrowImageUrl + '" class="go-icon">',
+                '</a>'
+            ].join('\n');
+            recallsListing.append(html);
+        })
+
+        $.each($('.accordion-results-display .recalls-listing .recall .recall-title'), function (key, value) {
+            if (value.innerHTML.length > 50) {
+                value.innerHTML = value.innerHTML.substr(0, 50) + '...'
+            }
+        })
+
+        $.each($('.accordion-results-display .recalls-listing .recall .recall-description'), function (key, value) {
+            if (value.innerHTML.length > 75) {
+                value.innerHTML = value.innerHTML.substr(0, 75) + '...'
+            }
+        })
+
+
+        //resultsDisplay.niceScroll().resize();
+
+        //var scrollingDivResults = resultsDisplay;
+        //var bodyTable = scrollingDivResults.find("table");
+        //var lastScroll = scrollingDivResults.scrollTop();
+        //var niceScroll = scrollingDivResults.getNiceScroll();
+        //var SCROLL_BUFFER = 5;
+        //scrollingDivResults.scroll(function (data) {
+        //    var newScroll = scrollingDivResults.scrollTop();
+        //    console.log("newScroll " + nedwScroll)
+        //    var delta = newScroll - lastScroll;
+        //    console.log("delta " + delta)
+        //    lastScroll = newScroll;
+        //    var scrollHeight = scrollingDivResults[0].scrollHeight;
+        //    console.log("scrollHeight " + scrollHeight)
+        //    var maxScroll = scrollHeight - scrollingDivResults[0].clientHeight;
+        //    console.log("maxScroll " + maxScroll)
+
+        //    if (delta > 0 && maxScroll - newScroll < SCROLL_BUFFER) {
+        //        InitializeRecallCampaigns(IsAllRecalls, DataSource, VinNumber, VehicleName, VehicleYear, PageNumber, Count);
+        //        console.log("reach")
+        //        niceScroll.resize();
+        //    }
+        //});
+    }
+}
+
+var recallCampaignsScrollInfinite = true;
+var PageNumber = 0;
+var Count = 8;
+var IsAllRecalls = false;
+var DataSource = "";
+var VinNumber = "";
+var VehicleName = "";
+var VehicleYear = "";
+var ContainerToAppend = "";
+
+function InitializeRecallCampaigns(isAllRecalls, dataSource, vinNumber, vehicleName, vehicleYear, pageNumber, count) {
+    if (recallCampaignsScrollInfinite) {
+        if (!IsAllRecalls && VinNumber == "" && VehicleName == "" && VehicleYear == "") {
+            return false;
+        }
+        $('.loader').css('display', 'flex');
+        $.ajax({
+            url: "/api/feature/forms/getrecallcampaigns",
+            //url: "https://jsonplaceholder.typicode.com/todos/1",
+            cache: false,
+            type: "GET",
+            data: {
+                isAllRecalls: IsAllRecalls,
+                dataSource: DataSource,
+                vinNumber: VinNumber,
+                vehicleName: VehicleName,
+                vehicleYear: VehicleYear,
+                pageNumber: PageNumber,
+                count: Count
+            },
+            success: function (data) {
+              //  console.log(data)
+                //if (data.Success) {
+                LoadRecallCampaigns(ContainerToAppend, data)
+                if (data.HasMore) {
+                    PageNumber++;
+                    recallCampaignsScrollInfinite = true;
+                    $('.view-more-recalls').css('display', 'inline-block')
+                }
+                else {
+                    recallCampaignsScrollInfinite = false;
+                    $('.view-more-recalls').css('display', 'none')
+                }
+                //}
+                //else {
+                //    recallCampaignsScrollInfinite = false;
+                //}
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+               // console.log(xhr)
+               // console.log(thrownError)
+               // console.log(ajaxOptions)
+            },
+            complete: function () {
+                $('.loader').css('display', 'none');
+            }
+        });
+    }
+}
+
+
+function getQueryVariable(variable) {
+    var query = window.location.search.substring(1);
+    var vars = query.split("&");
+    for (var i = 0; i < vars.length; i++) {
+        var pair = vars[i].split("=");
+        if (pair[0] == variable) { return pair[1]; }
+    }
+    return (false);
+}
